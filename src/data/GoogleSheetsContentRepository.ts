@@ -8,12 +8,15 @@ import { catalogGid, getCsvUrl } from './sheetsSource.ts';
 
 export class GoogleSheetsContentRepository implements ContentRepository {
   private catalog: CatalogEntry[] = [];
+  private catalogRequest?: Promise<CatalogEntry[]>;
 
   async getCatalog(): Promise<CatalogEntry[]> {
-    this.catalog = [];
-    const catalog = await loadContent(getCsvUrl(catalogGid), 'catalog', parseCatalog);
-    this.catalog = catalog;
-    return catalog;
+    if (!this.catalogRequest) {
+      this.catalogRequest = loadContent(getCsvUrl(catalogGid), 'catalog', parseCatalog)
+        .then(catalog => { this.catalog = catalog; return catalog; })
+        .finally(() => { this.catalogRequest = undefined; });
+    }
+    return this.catalogRequest;
   }
 
   async getQuestionBank(departmentId: string, courseId: string, examType: ExamType): Promise<Question[]> {

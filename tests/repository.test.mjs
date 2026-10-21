@@ -30,6 +30,35 @@ test('repository resolves only requested bank and shares course cache keys', asy
   assert.equal(requests.length, 4);
 });
 
+test('concurrent catalog loads share a snapshot and later loads refresh it', async t => {
+  let resolve;
+  const fetch = t.mock.method(globalThis, 'fetch', () => new Promise(done => { resolve = done; }));
+  const write = t.mock.method(contentCache, 'write', () => {});
+  const repository = new GoogleSheetsContentRepository();
+  const first = repository.getCatalog();
+  const second = repository.getCatalog();
+  assert.equal(fetch.mock.callCount(), 1);
+  resolve(new Response(catalog));
+  assert.equal(await first, await second);
+  assert.equal(write.mock.callCount(), 1);
+  const refresh = repository.getCatalog();
+  assert.equal(fetch.mock.callCount(), 2);
+  resolve(new Response(catalog.replaceAll('estetik', 'yeni')));
+  assert.equal((await refresh)[0].courseId, 'yeni');
+  fetch.mock.mockImplementation(async () => new Response(bank));
+  assert.equal((await repository.getQuestionBank('tasarim', 'yeni', 'midterm')).length, 1);
+});
+
+test('failed shared catalog request can be retried', async t => {
+  const fetch = t.mock.method(globalThis, 'fetch', async () => new Response('invalid catalog'));
+  const repository = new GoogleSheetsContentRepository();
+  await Promise.all([assert.rejects(repository.getCatalog()), assert.rejects(repository.getCatalog())]);
+  assert.equal(fetch.mock.callCount(), 1);
+  fetch.mock.mockImplementation(async () => new Response(catalog));
+  assert.equal((await repository.getCatalog()).length, 2);
+  assert.equal(fetch.mock.callCount(), 2);
+});
+
 test('offline repository loads a validated catalog snapshot before resolving a bank', async t => {
   t.mock.method(globalThis, 'fetch', async () => { throw new TypeError('offline'); });
   t.mock.method(contentCache, 'read', key => key === 'catalog' ? catalog : bank);
