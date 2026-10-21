@@ -4,10 +4,11 @@
   "version": "0.1.0",
   "type": "module",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.18.0"
   },
   "scripts": {
     "test": "node --test tests/*.test.mjs",
+    "test:content": "node scripts/check-content.mjs",
     "dev": "vite --open /calismac/",
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
