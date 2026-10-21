@@ -218,7 +218,46 @@ test('question image appears between question text and options', async t => {
   const image = document.querySelector('.question-image');
   assert.equal(image.src, imageUrl);
   assert.equal(image.previousElementSibling.className, 'question-text');
-  assert.equal(image.nextElementSibling.className, 'options');
+  assert.ok(image.compareDocumentPosition(document.querySelector('.options')) & window.Node.DOCUMENT_POSITION_FOLLOWING);
+  assert.ok([...document.querySelectorAll('.option')].every(button => button.disabled));
+  await act(async () => image.dispatchEvent(new window.Event('load')));
+  assert.ok([...document.querySelectorAll('.option')].every(button => !button.disabled));
+});
+
+test('failed question images retry without changing answers and reset for the next question', async t => {
+  t.mock.method(Math, 'random', () => 0.999);
+  const imageUrl = 'https://res.cloudinary.com/demo/image/upload/test.png';
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [
+    { ...question, imageUrl }, { ...question, id: 'second', imageUrl },
+  ] });
+  await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
+  const order = [...document.querySelectorAll('.option')].map(button => button.textContent);
+  const imageEvent = async name => act(async () => document.querySelector('.question-image').dispatchEvent(new window.Event(name)));
+  await imageEvent('error');
+  assert.match(document.querySelector('[role="alert"]').textContent, /görseli yüklenemedi/);
+  await view.click('Bir');
+  assert.equal(document.querySelector('.incorrect'), null);
+  const failedImage = document.querySelector('.question-image');
+  await view.click('Görseli Tekrar Dene');
+  assert.notEqual(document.querySelector('.question-image'), failedImage);
+  assert.equal(document.querySelector('[role="alert"]'), null);
+  assert.ok([...document.querySelectorAll('.option')].every(button => button.disabled));
+  await imageEvent('load');
+  assert.deepEqual([...document.querySelectorAll('.option')].map(button => button.textContent), order);
+  await view.click('Bir');
+  await imageEvent('error'); await view.click('Görseli Tekrar Dene'); await imageEvent('load');
+  assert.ok([...document.querySelectorAll('.option')].every(button => button.disabled));
+  assert.match(document.querySelector('.incorrect').textContent, /Bir/);
+  await view.click('Sonraki Soru');
+  assert.ok([...document.querySelectorAll('.option')].every(button => button.disabled));
+  await imageEvent('load'); await view.click('Bir'); await view.click('Sonuçları Gör');
+  await view.click('Yanlışları İncele');
+  await imageEvent('error'); await view.click('Görseli Tekrar Dene'); await imageEvent('load');
+  assert.ok([...document.querySelectorAll('.option')].every(button => button.disabled));
+  await view.click('Sonraki');
+  assert.match(view.text(), /Görsel yükleniyor/);
+  await view.click('Sonuçlara Dön');
+  assert.match(view.text(), /%0/);
 });
 
 test('first answer locks all choices and preserves their order', async t => {
@@ -412,6 +451,7 @@ test('published content changes reach the UI after a new launch without a new ap
   await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
   assert.match(view.text(), /Eski soru/);
   assert.ok(document.querySelector('.question-image').src.endsWith('old.png'));
+  await act(async () => document.querySelector('.question-image').dispatchEvent(new window.Event('load')));
   await view.click('Bir'); await view.click('Sonuçları Gör');
   assert.match(view.text(), /%100/);
   changed = true;
@@ -420,6 +460,7 @@ test('published content changes reach the UI after a new launch without a new ap
   assert.match(view.text(), /Güncel soru,\nçok satır/);
   assert.doesNotMatch(view.text(), /Eski soru/);
   assert.ok(document.querySelector('.question-image').src.endsWith('new.png'));
+  await act(async () => document.querySelector('.question-image').dispatchEvent(new window.Event('load')));
   await view.click('Yeni seçenek'); await view.click('Sonuçları Gör');
   assert.match(view.text(), /%100/);
   assert.deepEqual(requestedGids, ['0', '1', '0', '1']);

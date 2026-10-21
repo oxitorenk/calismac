@@ -105,7 +105,7 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
           navigate({ ...route, page: 'test' });
         }} />
       </>}
-      {route.page === 'test' && session && <TestPage session={session}
+      {route.page === 'test' && session && <TestPage key={session.currentQuestionIndex} session={session}
         onAnswer={optionIndex => setSession(current => current ? answerQuestion(current, optionIndex) : null)}
         onNext={() => {
           if (session.answers[session.currentQuestionIndex] === null) return;

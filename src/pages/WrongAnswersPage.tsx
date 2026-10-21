@@ -13,7 +13,7 @@ export function WrongAnswersPage({ session, onResults }: { session: TestSession;
     answers: wrongQuestionIndexes.map(index => session.answers[index]),
   };
   if (!review.questions.length) return null;
-  return <TestPage session={review} review onNext={() => {
+  return <TestPage key={index} session={review} review onNext={() => {
     if (index === review.questions.length - 1) onResults();
     else setIndex(index + 1);
   }} />;
