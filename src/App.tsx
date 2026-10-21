@@ -87,7 +87,7 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
   return (
     <AppShell
       compact={route.page === 'test' || route.page === 'wrong'}
-      contextLabel={route.page === 'test' || route.page === 'wrong' ? `${route.examType === 'midterm' ? 'Vize' : 'Final'}${route.page === 'wrong' && course ? ` · ${course}` : ''}` : undefined}
+      contextLabel={route.page === 'test' || route.page === 'wrong' || route.page === 'results' ? `${route.examType === 'midterm' ? 'Vize' : 'Final'}${route.page !== 'test' && course ? ` · ${course}` : ''}` : undefined}
       title={route.page === 'results' ? 'Sonuçlar' : route.page === 'wrong' ? 'Yanlışlar' : course ?? department ?? 'Çalışmaç'}
       backLabel={route.page === 'courses' ? 'Bölümler' : route.page === 'wrong' ? 'Sonuçlar' : route.page === 'course' ? department : course}
       onBack={route.page === 'departments' || route.page === 'results' ? undefined : () => navigate(parentRoute(route))}

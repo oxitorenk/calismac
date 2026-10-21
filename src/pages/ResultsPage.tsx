@@ -4,12 +4,18 @@ import { testResults } from '../domain/testResults';
 export function ResultsPage({ session, onReview, onHome }: { session: TestSession; onReview: () => void; onHome: () => void }) {
   const { correct, wrong, rate } = testResults(session);
   return (
-    <section aria-label="Test sonucu">
-      <p className="score">%{Math.round(rate * 100)}</p>
-      <p>{correct} Doğru</p>
-      <p>{wrong} Yanlış</p>
-      {wrong > 0 && <button className="primary" onClick={onReview}>Yanlışları İncele</button>}
-      <button className="back" onClick={onHome}>Ana Sayfa</button>
+    <section className="test-results" aria-label="Test sonucu">
+      <h2>Test tamamlandı</h2>
+      <p className="result-summary">{session.questions.length} soruda {correct} doğru.</p>
+      <p className="score" aria-label={`Başarı oranı yüzde ${Math.round(rate * 100)}`}>%{Math.round(rate * 100)}</p>
+      <dl className="result-counts">
+        <div><dt>Doğru</dt><dd>{correct}</dd></div>
+        <div><dt>Yanlış</dt><dd>{wrong}</dd></div>
+      </dl>
+      <div className="result-actions">
+        {wrong > 0 && <button className="primary" onClick={onReview}>Yanlışları İncele</button>}
+        <button className={wrong > 0 ? 'secondary' : 'primary'} onClick={onHome}>Ana Sayfa</button>
+      </div>
     </section>
   );
 }

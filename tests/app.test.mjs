@@ -352,8 +352,10 @@ test('all-correct results hide review and home returns to departments without co
   await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
   await view.click('Üç'); await view.click('Sonuçları Gör');
   assert.match(view.text(), /%100/);
-  assert.match(view.text(), /1 Doğru/);
-  assert.match(view.text(), /0 Yanlış/);
+  assert.deepEqual([...document.querySelectorAll('.result-counts dt')].map(item => item.textContent), ['Doğru', 'Yanlış']);
+  assert.deepEqual([...document.querySelectorAll('.result-counts dd')].map(item => item.textContent), ['1', '0']);
+  assert.equal(document.querySelector('.result-summary').textContent, '1 soruda 1 doğru.');
+  assert.match(document.querySelector('.study-context').textContent, /Vize.*Estetik/);
   assert.doesNotMatch(view.text(), /Yanlışları İncele/);
   await view.click('Ana Sayfa');
   assert.equal(document.querySelector('h1').textContent, 'Çalışmaç');
@@ -368,6 +370,8 @@ test('wrong-answer review keeps original choices, cannot change score and return
   const original = [...document.querySelectorAll('.option')].map(option => option.textContent);
   await view.click('Sonraki Soru'); await view.click('Üç'); await view.click('Sonuçları Gör');
   assert.match(view.text(), /%50/);
+  assert.equal(document.querySelector('.score').getAttribute('aria-label'), 'Başarı oranı yüzde 50');
+  assert.equal(document.querySelector('.result-actions .primary').textContent, 'Yanlışları İncele');
   await view.click('Yanlışları İncele');
   assert.match(view.text(), /1 \/ 1/);
   assert.ok(document.querySelector('main.study-shell .study-actions'));
