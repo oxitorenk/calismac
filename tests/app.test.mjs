@@ -403,3 +403,24 @@ test('published content changes reach the UI after a new launch without a new ap
   assert.deepEqual(requestedGids, ['0', '1', '0', '1']);
   assert.match(stored.get('calismac:content:v1:bank:estetik:midterm'), /Yeni seçenek/);
 });
+
+test('complete flow shares a course across departments while keeping exam banks separate', async t => {
+  const requests = [];
+  const view = await mount(t, {
+    getCatalog: async () => catalog,
+    getQuestionBank: async (department, course, exam) => {
+      requests.push([department, course, exam]);
+      return [{ ...question, text: exam === 'midterm' ? 'Vize sorusu' : 'Final sorusu' }];
+    },
+  });
+  for (const [department, exam, text] of [['Tasarım', 'Vize', 'Vize sorusu'], ['Sanat', 'Vize', 'Vize sorusu'], ['Sanat', 'Final', 'Final sorusu']]) {
+    await view.click(department); await view.click('Estetik'); await view.click(exam); await view.click('Başla');
+    assert.equal(document.querySelector('.question-text').textContent, text);
+    await view.click('Bir'); await view.click('Sonuçları Gör');
+    assert.match(view.text(), /%0/);
+    await view.click('Yanlışları İncele');
+    assert.equal(document.querySelector('.question-text').textContent, text);
+    await view.click('Sonuçlara Dön'); await view.click('Ana Sayfa');
+  }
+  assert.deepEqual(requests, [['tasarim', 'estetik', 'midterm'], ['sanat', 'estetik', 'midterm'], ['sanat', 'estetik', 'final']]);
+});
