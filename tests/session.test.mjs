@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createTestSession } from '../src/domain/createTestSession.ts';
 import { answerQuestion } from '../src/domain/answerQuestion.ts';
+import { testResults } from '../src/domain/testResults.ts';
 
 const bank = Array.from({ length: 3 }, (_, i) => ({
   id: String(i), text: `Soru ${i}`, imageUrl: 'https://res.cloudinary.com/demo/a.png',
@@ -39,4 +40,17 @@ test('only the first valid answer is recorded and question order stays fixed', (
   assert.deepEqual(answered.answers, [0, null]);
   assert.equal(answered.questions, session.questions);
   assert.equal(answerQuestion(answered, 1), answered);
+});
+
+test('results use correct divided by total for all-correct, wrong and mixed answers', () => {
+  const base = createTestSession(bank, 3, 'a', 'b', 'final');
+  assert.throws(() => testResults(base), /incomplete/);
+  for (const wrong of [0, 1, 3]) {
+    const session = { ...base, answers: base.questions.map((question, index) => question.options.findIndex(option => option.correct === (index >= wrong))) };
+    const result = testResults(session);
+    assert.equal(result.correct, 3 - wrong);
+    assert.equal(result.wrong, wrong);
+    assert.equal(result.rate, (3 - wrong) / 3);
+    assert.deepEqual(result.wrongQuestionIndexes, Array.from({ length: wrong }, (_, index) => index));
+  }
 });
