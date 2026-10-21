@@ -13,6 +13,7 @@ import type { ContentState } from './app/useContent';
 import type { ExamType, Question, TestSession } from './domain/models';
 import { createTestSession } from './domain/createTestSession';
 import { TestPage } from './pages/TestPage';
+import { answerQuestion } from './domain/answerQuestion';
 
 const defaultRepository = new GoogleSheetsContentRepository();
 
@@ -60,7 +61,7 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
           setRoute({ ...route, page: 'test' });
         }} />
       </>}
-      {route.page === 'test' && session && <TestPage session={session} />}
+      {route.page === 'test' && session && <TestPage session={session} onAnswer={optionIndex => setSession(current => current ? answerQuestion(current, optionIndex) : null)} />}
       {state.status === 'ready' && route.page === 'courses' && <CoursesPage
         catalog={state.data}
         departmentId={route.departmentId}

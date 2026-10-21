@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createTestSession } from '../src/domain/createTestSession.ts';
+import { answerQuestion } from '../src/domain/answerQuestion.ts';
 
 const bank = Array.from({ length: 3 }, (_, i) => ({
   id: String(i), text: `Soru ${i}`, imageUrl: 'https://res.cloudinary.com/demo/a.png',
@@ -28,4 +29,14 @@ test('session selects N distinct questions and shuffles options once without cha
 test('session rejects invalid counts and supports a single question', () => {
   for (const count of [0, -1, 4, 1.5, NaN]) assert.throws(() => createTestSession(bank, count, 'a', 'b', 'midterm'));
   assert.equal(createTestSession(bank.slice(0, 1), 1, 'a', 'b', 'midterm').questions.length, 1);
+});
+
+test('only the first valid answer is recorded and question order stays fixed', () => {
+  const session = createTestSession(bank, 2, 'a', 'b', 'midterm');
+  for (const invalid of [-1, 5, 1.5, NaN]) assert.throws(() => answerQuestion(session, invalid));
+  const answered = answerQuestion(session, 0);
+  assert.deepEqual(session.answers, [null, null]);
+  assert.deepEqual(answered.answers, [0, null]);
+  assert.equal(answered.questions, session.questions);
+  assert.equal(answerQuestion(answered, 1), answered);
 });

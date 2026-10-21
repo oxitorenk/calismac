@@ -211,3 +211,15 @@ test('question image appears between question text and options', async t => {
   assert.equal(image.previousElementSibling.className, 'question-text');
   assert.equal(image.nextElementSibling.className, 'options');
 });
+
+test('first answer locks all choices and preserves their order', async t => {
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question] });
+  await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
+  const options = [...document.querySelectorAll('.option')];
+  const order = options.map(option => option.textContent);
+  await act(async () => { options[0].click(); options[1].click(); });
+  assert.ok(options.every(option => option.disabled));
+  assert.equal(options[0].getAttribute('aria-pressed'), 'true');
+  assert.equal(options[1].getAttribute('aria-pressed'), 'false');
+  assert.deepEqual(options.map(option => option.textContent), order);
+});
