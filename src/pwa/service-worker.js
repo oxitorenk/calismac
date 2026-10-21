@@ -2,7 +2,17 @@ const SHELL_CACHE = '__SHELL_CACHE__';
 const PRECACHE = __PRECACHE__;
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(SHELL_CACHE).then(cache => cache.addAll(PRECACHE)));
+  event.waitUntil((async () => {
+    const cache = await caches.open(SHELL_CACHE);
+    await cache.addAll(PRECACHE);
+    await self.skipWaiting();
+  })());
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(caches.keys().then(keys => Promise.all(
+    keys.filter(key => key.startsWith('calismac-shell-') && key !== SHELL_CACHE).map(key => caches.delete(key)),
+  )));
 });
 
 self.addEventListener('fetch', event => {
@@ -10,7 +20,15 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET' || url.origin !== self.location.origin) return;
   const path = event.request.mode === 'navigate' ? '/calismac/index.html' : url.pathname;
   if (!PRECACHE.includes(path)) return;
-  event.respondWith(caches.open(SHELL_CACHE).then(async cache =>
-    await cache.match(path) ?? fetch(event.request),
-  ));
+  event.respondWith(caches.open(SHELL_CACHE).then(async cache => {
+    if (event.request.mode === 'navigate') {
+      try {
+        const response = await fetch(event.request);
+        if (response.ok) return response;
+      } catch {
+        // Offline launches use the complete, previously installed shell.
+      }
+    }
+    return await cache.match(path) ?? fetch(event.request);
+  }));
 });
