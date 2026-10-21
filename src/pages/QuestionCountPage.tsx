@@ -18,7 +18,7 @@ export function QuestionCountPage({ bank, onStart, onRetry }: { bank: ContentSta
     return () => clearTimeout(timer);
   }, [bank]);
   return (
-    <section aria-busy={bank.status === 'loading'}>
+    <section className="test-setup" aria-busy={bank.status === 'loading'}>
       <label htmlFor="question-count">Soru Sayısı</label>
       <div className="count-controls">
         <input id="question-count" type="text" inputMode="numeric" pattern="[0-9]*" value={count} placeholder="—" disabled={!ready} aria-invalid={ready && !valid} aria-describedby={ready && !valid ? 'count-error' : undefined} onInput={event => setCount(event.currentTarget.value)} />
@@ -29,7 +29,7 @@ export function QuestionCountPage({ bank, onStart, onRetry }: { bank: ContentSta
         <p role="alert">Sorular yüklenemedi.</p>
         <button className="primary" onClick={onRetry}>Tekrar Dene</button>
       </>}
-      {ready && <p>{bank.data.length} soru hazır.</p>}
+      {ready && <p className="bank-summary">{bank.data.length} soru hazır.</p>}
       {ready && !valid && <p id="count-error">1 ile {bank.data.length} arasında tam sayı gir.</p>}
       <button className="primary" disabled={!valid} onClick={() => { if (valid) onStart(selectedCount); }}>Başla</button>
     </section>
