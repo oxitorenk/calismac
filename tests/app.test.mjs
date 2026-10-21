@@ -38,6 +38,11 @@ async function mount(t, repository) {
       assert.ok(button, `Missing button: ${label}`);
       await act(async () => button.click());
     },
+    enterCount: async value => {
+      const input = document.getElementById('question-count');
+      Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(input, value);
+      await act(async () => input.dispatchEvent(new window.Event('input', { bubbles: true })));
+    },
   };
 }
 
@@ -113,4 +118,14 @@ test('bank loading stays on count screen with delayed indicator and disabled con
   await act(async () => resolve([{}]));
   assert.doesNotMatch(view.text(), /Yükleniyor/);
   assert.equal(input.disabled, false);
+});
+
+test('ready initializes count once without overwriting manual edits', async t => {
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => Array.from({ length: 30 }, () => ({})) });
+  await view.click('Tasarım');
+  await view.click('Estetik');
+  await view.click('Vize');
+  assert.equal(document.getElementById('question-count').value, '20');
+  await view.enterCount('7');
+  assert.equal(document.getElementById('question-count').value, '7');
 });
