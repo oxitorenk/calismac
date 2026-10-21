@@ -280,3 +280,22 @@ test('all-correct results hide review and home returns to departments without co
   assert.equal(document.querySelector('h1').textContent, 'Çalışmaç');
   assert.equal(document.querySelector('dialog'), null);
 });
+
+test('wrong-answer review keeps original choices, cannot change score and returns to results', async t => {
+  t.mock.method(Math, 'random', () => 0.999);
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question, { ...question, id: 'second', text: 'Doğru yapılan soru' }] });
+  await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
+  await view.click('Bir');
+  const original = [...document.querySelectorAll('.option')].map(option => option.textContent);
+  await view.click('Sonraki Soru'); await view.click('Üç'); await view.click('Sonuçları Gör');
+  assert.match(view.text(), /%50/);
+  await view.click('Yanlışları İncele');
+  assert.match(view.text(), /1 \/ 1/);
+  assert.doesNotMatch(view.text(), /Doğru yapılan soru/);
+  assert.deepEqual([...document.querySelectorAll('.option')].map(option => option.textContent), original);
+  assert.ok([...document.querySelectorAll('.option')].every(option => option.disabled));
+  await view.click('Üç');
+  await view.click('Sonuçlara Dön');
+  assert.match(view.text(), /%50/);
+  assert.equal(document.querySelector('dialog'), null);
+});
