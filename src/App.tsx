@@ -15,6 +15,7 @@ import { createTestSession } from './domain/createTestSession';
 import { TestPage } from './pages/TestPage';
 import { answerQuestion } from './domain/answerQuestion';
 import { ExitConfirmation } from './components/ExitConfirmation';
+import { ResultsPage } from './pages/ResultsPage';
 
 const defaultRepository = new GoogleSheetsContentRepository();
 
@@ -77,7 +78,7 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
     ? state.data.find(entry => entry.courseId === route.courseId)?.course
     : undefined;
   return (
-    <AppShell title={course ?? department ?? 'Çalışmaç'} backLabel={route.page === 'courses' ? 'Bölümler' : route.page === 'course' ? department : course} onBack={route.page === 'departments' ? undefined : () => navigate(parentRoute(route))}>
+    <AppShell title={route.page === 'results' ? 'Sonuçlar' : course ?? department ?? 'Çalışmaç'} backLabel={route.page === 'courses' ? 'Bölümler' : route.page === 'course' ? department : course} onBack={route.page === 'departments' || route.page === 'results' ? undefined : () => navigate(parentRoute(route))}>
       {route.page === 'departments' && <h2>Bölümler</h2>}
       {state.status === 'loading' && <p role="status">Bölümler yükleniyor…</p>}
       {state.status === 'error' && <>
@@ -105,7 +106,10 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
           else setSession({ ...session, currentQuestionIndex: session.currentQuestionIndex + 1 });
         }}
       />}
-      {route.page === 'results' && <h2>Sonuçlar</h2>}
+      {route.page === 'results' && session && <ResultsPage session={session}
+        onReview={() => navigate({ ...route, page: 'wrong' })}
+        onHome={() => navigate({ page: 'departments' })}
+      />}
       {state.status === 'ready' && route.page === 'courses' && <CoursesPage
         catalog={state.data}
         departmentId={route.departmentId}

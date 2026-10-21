@@ -267,3 +267,16 @@ test('active-test exit confirmation preserves progress or discards the test', as
   assert.ok(document.getElementById('question-count'));
   assert.equal(document.querySelector('.option'), null);
 });
+
+test('all-correct results hide review and home returns to departments without confirmation', async t => {
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question] });
+  await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
+  await view.click('Üç'); await view.click('Sonuçları Gör');
+  assert.match(view.text(), /%100/);
+  assert.match(view.text(), /1 Doğru/);
+  assert.match(view.text(), /0 Yanlış/);
+  assert.doesNotMatch(view.text(), /Yanlışları İncele/);
+  await view.click('Ana Sayfa');
+  assert.equal(document.querySelector('h1').textContent, 'Çalışmaç');
+  assert.equal(document.querySelector('dialog'), null);
+});
