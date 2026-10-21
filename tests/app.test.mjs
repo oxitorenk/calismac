@@ -129,3 +129,21 @@ test('ready initializes count once without overwriting manual edits', async t =>
   await view.enterCount('7');
   assert.equal(document.getElementById('question-count').value, '7');
 });
+
+test('question count accepts only integers within the bank bounds', async t => {
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => Array.from({ length: 5 }, () => ({})) });
+  await view.click('Tasarım');
+  await view.click('Estetik');
+  await view.click('Vize');
+  const start = [...document.querySelectorAll('button')].find(button => button.textContent === 'Başla');
+  assert.equal(document.getElementById('question-count').value, '5');
+  assert.equal(start.disabled, false);
+  for (const value of ['', '0', '6', '-1', '1.5', '1e1', 'abc']) {
+    await view.enterCount(value);
+    assert.equal(start.disabled, true, value);
+  }
+  for (const value of ['1', '5']) {
+    await view.enterCount(value);
+    assert.equal(start.disabled, false, value);
+  }
+});
