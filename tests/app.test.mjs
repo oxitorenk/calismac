@@ -81,3 +81,17 @@ test('courses are filtered by department and preserve the shared course identity
   await view.click('Tasarım');
   assert.equal(document.querySelectorAll('.list-button').length, 2);
 });
+
+test('only the selected exam bank is requested at selection time', async t => {
+  const requests = [];
+  const view = await mount(t, {
+    getCatalog: async () => catalog,
+    getQuestionBank: async (...args) => { requests.push(args); return [{}]; },
+  });
+  await view.click('Tasarım');
+  await view.click('Estetik');
+  assert.deepEqual(requests, []);
+  await view.click('Final');
+  assert.deepEqual(requests, [['tasarim', 'estetik', 'final']]);
+  assert.match(view.text(), /1 soru hazır/);
+});
