@@ -8,6 +8,7 @@ import type { Route } from './app/navigation';
 import { DepartmentsPage } from './pages/DepartmentsPage';
 import { CoursesPage } from './pages/CoursesPage';
 import { CoursePage } from './pages/CoursePage';
+import { QuestionCountPage } from './pages/QuestionCountPage';
 import type { ContentState } from './app/useContent';
 import type { ExamType, Question } from './domain/models';
 
@@ -50,7 +51,7 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
       {state.status === 'ready' && route.page === 'course' && <CoursePage onSelect={selectExam} />}
       {route.page === 'count' && <>
         <h2>{route.examType === 'midterm' ? 'Vize' : 'Final'}</h2>
-        <p role="status">{bank.status === 'ready' ? `${bank.data.length} soru hazır.` : 'Soru bankası yükleniyor…'}</p>
+        <QuestionCountPage bank={bank} />
       </>}
       {state.status === 'ready' && route.page === 'courses' && <CoursesPage
         catalog={state.data}

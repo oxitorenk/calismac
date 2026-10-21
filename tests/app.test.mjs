@@ -95,3 +95,22 @@ test('only the selected exam bank is requested at selection time', async t => {
   assert.deepEqual(requests, [['tasarim', 'estetik', 'final']]);
   assert.match(view.text(), /1 soru hazır/);
 });
+
+test('bank loading stays on count screen with delayed indicator and disabled controls', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  let resolve;
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: () => new Promise(done => { resolve = done; }) });
+  await view.click('Tasarım');
+  await view.click('Estetik');
+  await view.click('Vize');
+  const input = document.getElementById('question-count');
+  assert.equal(input.disabled, true);
+  assert.equal(input.value, '');
+  assert.doesNotMatch(view.text(), /Yükleniyor/);
+  await act(async () => t.mock.timers.tick(400));
+  assert.match(view.text(), /Yükleniyor/);
+  assert.ok([...document.querySelectorAll('section button')].every(button => button.disabled));
+  await act(async () => resolve([{}]));
+  assert.doesNotMatch(view.text(), /Yükleniyor/);
+  assert.equal(input.disabled, false);
+});
