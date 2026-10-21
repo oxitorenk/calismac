@@ -10,7 +10,8 @@ import { CoursesPage } from './pages/CoursesPage';
 import { CoursePage } from './pages/CoursePage';
 import { QuestionCountPage } from './pages/QuestionCountPage';
 import type { ContentState } from './app/useContent';
-import type { ExamType, Question } from './domain/models';
+import type { ExamType, Question, TestSession } from './domain/models';
+import { createTestSession } from './domain/createTestSession';
 
 const defaultRepository = new GoogleSheetsContentRepository();
 
@@ -20,6 +21,7 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
   const [route, setRoute] = useState<Route>({ page: 'departments' });
   const [bank, setBank] = useState<ContentState<Question[]>>({ status: 'loading' });
   const requestId = useRef(0);
+  const [session, setSession] = useState<TestSession | null>(null);
   function selectExam(examType: ExamType) {
     if (route.page !== 'course' && route.page !== 'count') return;
     const id = ++requestId.current;
@@ -51,8 +53,13 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
       {state.status === 'ready' && route.page === 'course' && <CoursePage onSelect={selectExam} />}
       {route.page === 'count' && <>
         <h2>{route.examType === 'midterm' ? 'Vize' : 'Final'}</h2>
-        <QuestionCountPage bank={bank} onRetry={() => selectExam(route.examType)} onStart={() => setRoute({ ...route, page: 'test' })} />
+        <QuestionCountPage bank={bank} onRetry={() => selectExam(route.examType)} onStart={count => {
+          if (bank.status !== 'ready') return;
+          setSession(createTestSession(bank.data, count, route.departmentId, route.courseId, route.examType));
+          setRoute({ ...route, page: 'test' });
+        }} />
       </>}
+      {route.page === 'test' && session && <p>{session.currentQuestionIndex + 1} / {session.questions.length}</p>}
       {state.status === 'ready' && route.page === 'courses' && <CoursesPage
         catalog={state.data}
         departmentId={route.departmentId}
