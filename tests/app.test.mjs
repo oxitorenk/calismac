@@ -163,6 +163,10 @@ test('all selection is derived from the count, including manual input', async t 
   assert.equal(all.getAttribute('aria-pressed'), 'true');
   await view.enterCount('');
   assert.equal(all.getAttribute('aria-pressed'), 'false');
+  await view.enterCount('1');
+  assert.equal(all.getAttribute('aria-pressed'), 'true');
+  await view.enterCount('0');
+  assert.equal(all.getAttribute('aria-pressed'), 'false');
   await view.click('Tümü');
   assert.equal(document.getElementById('question-count').value, '1');
   assert.equal(all.getAttribute('aria-pressed'), 'true');
@@ -310,4 +314,55 @@ test('new tests discard previous answers and history cannot restore a discarded 
   assert.ok([...document.querySelectorAll('.option')].every(option => !option.disabled));
   assert.equal(document.querySelector('.incorrect'), null);
   assert.equal(document.querySelector('.correct'), null);
+});
+
+test('a late response from a previous bank cannot overwrite the selected bank', async t => {
+  let resolveOld;
+  const view = await mount(t, {
+    getCatalog: async () => catalog,
+    getQuestionBank: async (_department, _course, exam) => exam === 'midterm'
+      ? new Promise(resolve => { resolveOld = resolve; }) : [question, { ...question, id: 'second' }],
+  });
+  await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize');
+  await view.click('Estetik'); await view.click('Final');
+  assert.equal(document.getElementById('question-count').value, '2');
+  await act(async () => resolveOld([question]));
+  assert.equal(document.getElementById('question-count').value, '2');
+});
+
+test('browser back requests confirmation and Escape continues the same test', async t => {
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question] });
+  await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
+  const leaving = new window.Event('beforeunload', { cancelable: true });
+  window.dispatchEvent(leaving);
+  assert.equal(leaving.defaultPrevented, true);
+  await act(async () => {
+    const popped = new Promise(resolve => window.addEventListener('popstate', resolve, { once: true }));
+    window.history.back();
+    await popped;
+  });
+  assert.ok(document.querySelector('dialog'));
+  await act(async () => document.querySelector('dialog').dispatchEvent(new window.Event('cancel', { cancelable: true })));
+  assert.equal(document.querySelector('dialog'), null);
+  assert.ok(document.querySelector('.option'));
+  await view.click('Üç'); await view.click('Sonuçları Gör');
+  const complete = new window.Event('beforeunload', { cancelable: true });
+  window.dispatchEvent(complete);
+  assert.equal(complete.defaultPrevented, false);
+});
+
+test('multiple incorrect answers are reviewed once each without reshuffling', async t => {
+  const random = t.mock.method(Math, 'random', () => 0.999);
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question, { ...question, id: 'second', text: 'İkinci yanlış' }] });
+  await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
+  const calls = random.mock.callCount();
+  await view.click('Bir'); await view.click('Sonraki Soru'); await view.click('İki'); await view.click('Sonuçları Gör');
+  await view.click('Yanlışları İncele');
+  assert.match(view.text(), /1 \/ 2/);
+  await view.click('Sonraki');
+  assert.match(view.text(), /2 \/ 2/);
+  assert.match(view.text(), /İkinci yanlış/);
+  await view.click('Sonuçlara Dön');
+  assert.match(view.text(), /%0/);
+  assert.equal(random.mock.callCount(), calls);
 });
