@@ -22,12 +22,17 @@ self.addEventListener('fetch', event => {
   if (!PRECACHE.includes(path)) return;
   event.respondWith(caches.open(SHELL_CACHE).then(async cache => {
     if (event.request.mode === 'navigate') {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 3000);
       try {
-        const response = await fetch(event.request);
+        const response = await fetch(event.request, { signal: controller.signal });
         if (response.ok) return response;
       } catch {
         // Offline launches use the complete, previously installed shell.
+      } finally {
+        clearTimeout(timeout);
       }
+      return await cache.match(path) ?? Response.error();
     }
     return await cache.match(path) ?? fetch(event.request);
   }));

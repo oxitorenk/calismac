@@ -16,7 +16,7 @@ async function worker(network = async () => { throw new Error('offline'); }) {
   const source = (await readFile(new URL('../src/pwa/service-worker.js', import.meta.url), 'utf8'))
     .replace('__SHELL_CACHE__', 'calismac-shell-test')
     .replace('__PRECACHE__', JSON.stringify(['/calismac/index.html', '/calismac/assets/app.js']));
-  runInNewContext(source, { self, caches, URL, fetch: network });
+  runInNewContext(source, { self, caches, URL, Response, AbortController, setTimeout, clearTimeout, fetch: network });
   let installing;
   handlers.install({ waitUntil: promise => { installing = promise; } });
   await installing;
@@ -35,6 +35,21 @@ test('service worker serves cached shell offline without intercepting content or
     handlers.fetch({ request: { url, method: 'GET', mode: 'cors' }, respondWith: () => { intercepted = true; } });
     assert.equal(intercepted, false);
   }
+});
+
+test('stalled navigation aborts and serves the installed shell', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  let signal;
+  const { handlers } = await worker((_request, options) => new Promise((_resolve, reject) => {
+    signal = options.signal;
+    signal.addEventListener('abort', () => reject(new Error('timeout')));
+  }));
+  let response;
+  handlers.fetch({ request: { url: 'https://example.com/calismac/', method: 'GET', mode: 'navigate' }, respondWith: promise => { response = promise; } });
+  await Promise.resolve();
+  t.mock.timers.tick(3000);
+  assert.equal(await (await response).text(), '/calismac/index.html');
+  assert.equal(signal.aborted, true);
 });
 
 test('new shell activation deletes only older app-shell caches', async () => {
