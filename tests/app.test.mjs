@@ -6,6 +6,11 @@ import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 
 let server, App;
+const catalog = [
+  { departmentId: 'tasarim', department: 'Tasarım', courseId: 'estetik', course: 'Estetik', midtermGid: '1', finalGid: '2' },
+  { departmentId: 'tasarim', department: 'Tasarım', courseId: 'fotograf', course: 'Fotoğraf', midtermGid: '3', finalGid: '4' },
+  { departmentId: 'sanat', department: 'Sanat', courseId: 'estetik', course: 'Estetik', midtermGid: '1', finalGid: '2' },
+];
 before(async () => {
   server = await createServer({ server: { middlewareMode: true, hmr: false }, appType: 'custom' });
   ({ App } = await server.ssrLoadModule('/src/App.tsx'));
@@ -42,7 +47,7 @@ test('catalog shows loading, error and a successful retry', async t => {
   const view = await mount(t, {
     getCatalog() {
       calls++;
-      return calls === 1 ? new Promise((_resolve, fail) => { reject = fail; }) : Promise.resolve([]);
+      return calls === 1 ? new Promise((_resolve, fail) => { reject = fail; }) : Promise.resolve(catalog);
     },
   });
   assert.match(view.text(), /Bölümler yükleniyor/);
@@ -50,6 +55,15 @@ test('catalog shows loading, error and a successful retry', async t => {
   await act(async () => reject(new Error('offline')));
   assert.match(view.text(), /Bölümler yüklenemedi/);
   await view.click('Tekrar Dene');
-  assert.match(view.text(), /Bölümler hazır/);
+  assert.match(view.text(), /Tasarım/);
   assert.equal(calls, 2);
+});
+
+test('departments are distinct by ID and the entire row navigates', async t => {
+  const view = await mount(t, { getCatalog: async () => catalog });
+  assert.equal(document.querySelectorAll('.list-button').length, 2);
+  await view.click('Sanat');
+  assert.equal(document.querySelector('h1').textContent, 'Sanat');
+  await view.click('Bölümler');
+  assert.equal(document.querySelectorAll('.list-button').length, 2);
 });
