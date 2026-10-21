@@ -212,6 +212,7 @@ test('test screen renders selected session question and relabeled shuffled optio
   assert.equal(document.querySelector('header h1').textContent, 'Estetik');
   assert.equal(document.querySelector('.study-context').textContent, 'Vize');
   assert.equal(document.querySelector('.question-content').getAttribute('tabindex'), '0');
+  assert.equal(document.querySelector('.question-content').getAttribute('role'), 'region');
   assert.equal(document.querySelector('.study-actions'), null);
   const options = [...document.querySelectorAll('.option')];
   assert.equal(options.length, 5);
@@ -250,11 +251,14 @@ test('failed question images retry without changing answers and reset for the ne
   await view.click('Bir');
   assert.equal(document.querySelector('.incorrect'), null);
   const failedImage = document.querySelector('.question-image');
+  [...document.querySelectorAll('button')].find(button => button.textContent === 'Görseli Tekrar Dene').focus();
   await view.click('Görseli Tekrar Dene');
+  assert.equal(document.activeElement.className, 'question-text');
   assert.notEqual(document.querySelector('.question-image'), failedImage);
   assert.equal(document.querySelector('[role="alert"]'), null);
   assert.ok([...document.querySelectorAll('.option')].every(button => button.disabled));
   await imageEvent('load');
+  assert.equal(document.activeElement, document.querySelector('.question-text'));
   assert.deepEqual([...document.querySelectorAll('.option')].map(button => button.textContent), order);
   await view.click('Bir');
   await imageEvent('error'); await view.click('Görseli Tekrar Dene'); await imageEvent('load');

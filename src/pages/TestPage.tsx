@@ -13,7 +13,7 @@ export function TestPage({ session, onAnswer, onNext, review = false }: { sessio
   }, [question.id]);
   return (
     <section className="study-session" aria-label={review ? 'Yanlışlar' : 'Test'}>
-      <div className="question-content" tabIndex={0} aria-label="Soru ve cevap seçenekleri">
+      <div className="question-content" role="region" tabIndex={0} aria-label="Soru ve cevap seçenekleri">
       <p className="progress" id="question-progress"><span className="sr-only">Soru </span>{session.currentQuestionIndex + 1} / {session.questions.length}</p>
       <h2 className="question-text" ref={heading} tabIndex={-1} aria-describedby="question-progress">{question.text}</h2>
       {question.imageUrl && <>
@@ -22,7 +22,11 @@ export function TestPage({ session, onAnswer, onNext, review = false }: { sessio
         {imageStatus === 'loading' && <p role="status">Görsel yükleniyor…</p>}
         {imageStatus === 'error' && <>
           <p role="alert">Soru görseli yüklenemedi. Bağlantını kontrol edip tekrar dene.</p>
-          <button onClick={() => { setImageStatus('loading'); setImageAttempt(imageAttempt + 1); }}>Görseli Tekrar Dene</button>
+          <button className="secondary" onClick={() => {
+            heading.current?.focus({ preventScroll: true });
+            setImageStatus('loading');
+            setImageAttempt(imageAttempt + 1);
+          }}>Görseli Tekrar Dene</button>
         </>}
       </>}
       <div className="options" role="group" aria-label="Cevap seçenekleri">
