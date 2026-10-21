@@ -299,3 +299,15 @@ test('wrong-answer review keeps original choices, cannot change score and return
   assert.match(view.text(), /%50/);
   assert.equal(document.querySelector('dialog'), null);
 });
+
+test('new tests discard previous answers and history cannot restore a discarded session', async t => {
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question] });
+  await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
+  await view.click('Bir'); await view.click('Sonuçları Gör'); await view.click('Ana Sayfa');
+  await act(async () => window.dispatchEvent(new window.PopStateEvent('popstate', { state: { calismacRoute: { page: 'results', departmentId: 'tasarim', courseId: 'estetik', examType: 'midterm' } } })));
+  assert.equal(document.querySelector('h1').textContent, 'Çalışmaç');
+  await view.click('Tasarım'); await view.click('Estetik'); await view.click('Final'); await view.click('Başla');
+  assert.ok([...document.querySelectorAll('.option')].every(option => !option.disabled));
+  assert.equal(document.querySelector('.incorrect'), null);
+  assert.equal(document.querySelector('.correct'), null);
+});

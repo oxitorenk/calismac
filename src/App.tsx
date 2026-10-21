@@ -30,7 +30,8 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
   const [pendingRoute, setPendingRoute] = useState<Route | null>(null);
   const incomplete = route.page === 'test' && session?.answers.some(answer => answer === null);
   function commitNavigation(target: Route, replace = false) {
-    if (route.page === 'test' && target.page !== 'results') setSession(null);
+    if (!['test', 'results', 'wrong'].includes(target.page)) setSession(null);
+    if (target.page === 'count') loadBank(target);
     if (replace) window.history.replaceState({ calismacRoute: target }, '');
     else window.history.pushState({ calismacRoute: target }, '');
     setRoute(target);
@@ -45,7 +46,10 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
   useEffect(() => {
     function onPop(event: PopStateEvent) {
       let target: Route = event.state?.calismacRoute ?? { page: 'departments' };
-      if (['test', 'results', 'wrong'].includes(target.page) && !session) target = { page: 'departments' };
+      if (target.page === 'test' || target.page === 'results' || target.page === 'wrong') {
+        if (!session || session.departmentId !== target.departmentId || session.courseId !== target.courseId || session.examType !== target.examType) target = { page: 'departments' };
+        else if (target.page !== 'test' && session.answers.some(answer => answer === null)) target = { ...target, page: 'test' };
+      }
       if (incomplete) {
         window.history.pushState({ calismacRoute: route }, '');
         setPendingRoute(target);
@@ -64,10 +68,12 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
   }, [route, session, incomplete]);
   function selectExam(examType: ExamType) {
     if (route.page !== 'course' && route.page !== 'count') return;
+    navigate({ ...route, page: 'count', examType });
+  }
+  function loadBank(selection: { departmentId: string; courseId: string; examType: ExamType }) {
     const id = ++requestId.current;
     setBank({ status: 'loading' });
-    navigate({ ...route, page: 'count', examType });
-    repository.getQuestionBank(route.departmentId, route.courseId, examType).then(
+    repository.getQuestionBank(selection.departmentId, selection.courseId, selection.examType).then(
       data => { if (requestId.current === id) setBank({ status: 'ready', data }); },
       () => { if (requestId.current === id) setBank({ status: 'error' }); },
     );
