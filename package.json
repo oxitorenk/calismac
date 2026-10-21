@@ -5,6 +5,7 @@
   "type": "module",
   "engines": { "node": ">=22.12.0" },
   "scripts": {
+    "test": "node --test tests/*.test.mjs",
     "dev": "vite --open /calismac/",
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
