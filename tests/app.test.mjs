@@ -216,10 +216,20 @@ test('first answer locks all choices and preserves their order', async t => {
   const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question] });
   await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
   const options = [...document.querySelectorAll('.option')];
-  const order = options.map(option => option.textContent);
+  const order = options.map(option => option.children[1].textContent);
   await act(async () => { options[0].click(); options[1].click(); });
   assert.ok(options.every(option => option.disabled));
   assert.equal(options[0].getAttribute('aria-pressed'), 'true');
   assert.equal(options[1].getAttribute('aria-pressed'), 'false');
-  assert.deepEqual(options.map(option => option.textContent), order);
+  assert.deepEqual(options.map(option => option.children[1].textContent), order);
+});
+
+test('wrong answer shows chosen and correct options with textual feedback', async t => {
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question] });
+  await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
+  assert.equal(document.querySelector('.correct'), null);
+  await view.click('Bir');
+  assert.match(document.querySelector('.incorrect').textContent, /Bir.*Yanlış/s);
+  assert.match(document.querySelector('.correct').textContent, /Üç.*Doğru/s);
+  assert.match(document.querySelector('[role="status"]').textContent, /Yanlış cevap/);
 });

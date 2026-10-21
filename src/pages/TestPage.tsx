@@ -10,11 +10,14 @@ export function TestPage({ session, onAnswer }: { session: TestSession; onAnswer
       {question.imageUrl && <img className="question-image" src={question.imageUrl} alt="Soruya ait görsel" />}
       <div className="options" role="group" aria-label="Cevap seçenekleri">
         {question.options.map((option, index) => (
-          <button className="option" key={index} disabled={selected !== null} aria-pressed={selected === index} onClick={() => onAnswer(index)}>
+          <button className={`option${selected !== null && option.correct ? ' correct' : selected === index ? ' incorrect' : ''}`} key={index} disabled={selected !== null} aria-pressed={selected === index} onClick={() => onAnswer(index)}>
             <span>{'ABCDE'[index]})</span> <span>{option.text}</span>
+            {selected !== null && option.correct && <span className="feedback">✓ Doğru{selected === index ? ' — Cevabın' : ''}</span>}
+            {selected === index && !option.correct && <span className="feedback">✕ Yanlış — Cevabın</span>}
           </button>
         ))}
       </div>
+      {selected !== null && <p role="status">{question.options[selected].correct ? 'Doğru cevap!' : 'Yanlış cevap. Doğru cevap işaretlendi.'}</p>}
     </section>
   );
 }

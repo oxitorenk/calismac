@@ -177,3 +177,25 @@ button:disabled, input:disabled {
 .option:active {
   background: #e5e5ea;
 }
+
+.option:disabled {
+  opacity: 1;
+}
+
+.option.correct {
+  border-color: #18713b;
+  background: #e9f6ed;
+  color: #125b2f;
+}
+
+.option.incorrect {
+  border-color: #b3261e;
+  background: #ffedeb;
+  color: #922019;
+}
+
+.feedback {
+  margin-left: auto;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
