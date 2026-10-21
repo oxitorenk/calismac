@@ -233,3 +233,20 @@ test('wrong answer shows chosen and correct options with textual feedback', asyn
   assert.match(document.querySelector('.correct').textContent, /Üç.*Doğru/s);
   assert.match(document.querySelector('[role="status"]').textContent, /Yanlış cevap/);
 });
+
+test('next question requires an answer, preserves order and ends at results', async t => {
+  const random = t.mock.method(Math, 'random', () => 0.999);
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question, { ...question, id: 'second', text: 'İkinci soru' }] });
+  await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
+  const randomCalls = random.mock.callCount();
+  assert.doesNotMatch(view.text(), /Sonraki Soru/);
+  await view.click('Üç');
+  await view.click('Sonraki Soru');
+  assert.match(view.text(), /2 \/ 2/);
+  assert.match(document.querySelector('.question-text').textContent, /İkinci soru/);
+  assert.ok([...document.querySelectorAll('.option')].every(button => !button.disabled));
+  await view.click('Bir');
+  await view.click('Sonuçları Gör');
+  assert.match(view.text(), /Sonuçlar/);
+  assert.equal(random.mock.callCount(), randomCalls);
+});

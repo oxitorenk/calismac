@@ -61,7 +61,15 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
           setRoute({ ...route, page: 'test' });
         }} />
       </>}
-      {route.page === 'test' && session && <TestPage session={session} onAnswer={optionIndex => setSession(current => current ? answerQuestion(current, optionIndex) : null)} />}
+      {route.page === 'test' && session && <TestPage session={session}
+        onAnswer={optionIndex => setSession(current => current ? answerQuestion(current, optionIndex) : null)}
+        onNext={() => {
+          if (session.answers[session.currentQuestionIndex] === null) return;
+          if (session.currentQuestionIndex === session.questions.length - 1) setRoute({ ...route, page: 'results' });
+          else setSession({ ...session, currentQuestionIndex: session.currentQuestionIndex + 1 });
+        }}
+      />}
+      {route.page === 'results' && <h2>Sonuçlar</h2>}
       {state.status === 'ready' && route.page === 'courses' && <CoursesPage
         catalog={state.data}
         departmentId={route.departmentId}

@@ -1,6 +1,6 @@
 import type { TestSession } from '../domain/models';
 
-export function TestPage({ session, onAnswer }: { session: TestSession; onAnswer: (optionIndex: number) => void }) {
+export function TestPage({ session, onAnswer, onNext }: { session: TestSession; onAnswer: (optionIndex: number) => void; onNext: () => void }) {
   const question = session.questions[session.currentQuestionIndex];
   const selected = session.answers[session.currentQuestionIndex];
   return (
@@ -18,6 +18,9 @@ export function TestPage({ session, onAnswer }: { session: TestSession; onAnswer
         ))}
       </div>
       {selected !== null && <p role="status">{question.options[selected].correct ? 'Doğru cevap!' : 'Yanlış cevap. Doğru cevap işaretlendi.'}</p>}
+      {selected !== null && <button className="primary" onClick={onNext}>
+        {session.currentQuestionIndex === session.questions.length - 1 ? 'Sonuçları Gör' : 'Sonraki Soru'}
+      </button>}
     </section>
   );
 }
