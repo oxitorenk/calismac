@@ -11,6 +11,10 @@ const catalog = [
   { departmentId: 'tasarim', department: 'Tasarım', courseId: 'fotograf', course: 'Fotoğraf', midtermGid: '3', finalGid: '4' },
   { departmentId: 'sanat', department: 'Sanat', courseId: 'estetik', course: 'Estetik', midtermGid: '1', finalGid: '2' },
 ];
+const question = {
+  id: '2026-guz-ara-05', text: 'Soru metni\nİkinci satır',
+  options: ['Bir', 'İki', 'Üç', 'Dört', 'Beş'].map(text => ({ text, correct: text === 'Üç' })),
+};
 before(async () => {
   server = await createServer({ server: { middlewareMode: true, hmr: false }, appType: 'custom' });
   ({ App } = await server.ssrLoadModule('/src/App.tsx'));
@@ -178,4 +182,18 @@ test('bank failure retries on the same screen and initializes the new bank', asy
   assert.equal(document.getElementById('question-count').value, '3');
   assert.doesNotMatch(view.text(), /Sorular yüklenemedi/);
   assert.equal(calls, 2);
+});
+
+test('test screen renders selected session question and relabeled shuffled options', async t => {
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question] });
+  await view.click('Tasarım');
+  await view.click('Estetik');
+  await view.click('Vize');
+  await view.click('Başla');
+  assert.match(view.text(), /1 \/ 1/);
+  assert.match(view.text(), /Soru metni\nİkinci satır/);
+  const options = [...document.querySelectorAll('.option')];
+  assert.equal(options.length, 5);
+  assert.deepEqual(options.map(option => option.firstElementChild.textContent), ['A)', 'B)', 'C)', 'D)', 'E)']);
+  assert.deepEqual(options.map(option => option.children[1].textContent).sort(), question.options.map(option => option.text).sort());
 });
