@@ -1,9 +1,9 @@
 :root {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #1c1c1e;
-  background: #f2f2f7;
+  color: #f2f2f7;
+  background: #121214;
   font-synthesis: none;
-  color-scheme: light;
+  color-scheme: dark;
   -webkit-text-size-adjust: 100%;
 }
 
@@ -45,7 +45,7 @@ button:disabled, input:disabled {
 }
 
 :focus-visible {
-  outline: 3px solid #005fcc;
+  outline: 3px solid #80baff;
   outline-offset: 3px;
 }
 
@@ -53,7 +53,7 @@ button:disabled, input:disabled {
   border: 0;
   padding: 0.5rem 0;
   background: transparent;
-  color: #005fcc;
+  color: #80baff;
   text-align: left;
 }
 
@@ -63,11 +63,11 @@ button:disabled, input:disabled {
   margin: 1rem 0;
   border-radius: 16px;
   overflow: hidden;
-  background: #fff;
+  background: #222226;
 }
 
 .grouped-list li + li {
-  border-top: 1px solid #e5e5ea;
+  border-top: 1px solid #34343a;
 }
 
 .list-button {
@@ -86,7 +86,7 @@ button:disabled, input:disabled {
 }
 
 .list-button:active {
-  background: #e5e5ea;
+  background: #34343a;
 }
 
 .primary {
@@ -94,13 +94,13 @@ button:disabled, input:disabled {
   border: 0;
   border-radius: 12px;
   padding: 0.75rem 1rem;
-  background: #005fcc;
-  color: #fff;
+  background: #80baff;
+  color: #121214;
   font-weight: 600;
 }
 
 .primary:active {
-  background: #00489b;
+  background: #a8d0ff;
 }
 
 .count-controls {
@@ -115,27 +115,27 @@ button:disabled, input:disabled {
   min-width: 0;
   min-height: 48px;
   padding: 0.75rem;
-  border: 1px solid #8e8e93;
+  border: 1px solid #75757f;
   border-radius: 10px;
-  background: #fff;
+  background: #222226;
 }
 
 .count-controls button {
-  border: 1px solid #8e8e93;
+  border: 1px solid #75757f;
   border-radius: 10px;
   padding: 0.5rem 1rem;
-  background: #fff;
-  color: #005fcc;
+  background: #222226;
+  color: #80baff;
 }
 
 .count-controls button[aria-pressed="true"] {
-  background: #005fcc;
-  border-color: #005fcc;
-  color: #fff;
+  background: #80baff;
+  border-color: #80baff;
+  color: #121214;
 }
 
 .progress {
-  color: #636366;
+  color: #b0b0ba;
   text-align: right;
 }
 
@@ -163,10 +163,10 @@ button:disabled, input:disabled {
 .option {
   display: flex;
   gap: 0.75rem;
-  border: 1px solid #d1d1d6;
+  border: 1px solid #55555f;
   border-radius: 12px;
   padding: 1rem;
-  background: #fff;
+  background: #222226;
   color: inherit;
   text-align: left;
   line-height: 1.5;
@@ -175,7 +175,7 @@ button:disabled, input:disabled {
 }
 
 .option:active {
-  background: #e5e5ea;
+  background: #34343a;
 }
 
 .option:disabled {
@@ -183,15 +183,15 @@ button:disabled, input:disabled {
 }
 
 .option.correct {
-  border-color: #18713b;
-  background: #e9f6ed;
-  color: #125b2f;
+  border-color: #63d78b;
+  background: #173324;
+  color: #a0efba;
 }
 
 .option.incorrect {
-  border-color: #b3261e;
-  background: #ffedeb;
-  color: #922019;
+  border-color: #ff8d86;
+  background: #3b2023;
+  color: #ffb4ae;
 }
 
 .feedback {
@@ -206,11 +206,12 @@ dialog {
   border: 0;
   border-radius: 20px;
   padding: 1.5rem;
-  color: #1c1c1e;
+  background: #222226;
+  color: #f2f2f7;
 }
 
 dialog::backdrop {
-  background: #0006;
+  background: #000a;
 }
 
 .score {
