@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-Open the URL printed by Vite, including the `/calismac/` path.
+Vite automatically opens the browser at `/calismac/`.
 
 In WebStorm, open this repository and select **Run → Edit Configurations → + → npm**. Select the root `package.json`, command `run`, and script `dev`. Run that configuration. IDE configuration files remain local and are ignored by Git.
 
