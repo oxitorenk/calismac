@@ -147,3 +147,18 @@ test('question count accepts only integers within the bank bounds', async t => {
     assert.equal(start.disabled, false, value);
   }
 });
+
+test('all selection is derived from the count, including manual input', async t => {
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [{}] });
+  await view.click('Tasarım');
+  await view.click('Estetik');
+  await view.click('Vize');
+  const all = [...document.querySelectorAll('button')].find(button => button.textContent === 'Tümü');
+  assert.equal(document.getElementById('question-count').value, '1');
+  assert.equal(all.getAttribute('aria-pressed'), 'true');
+  await view.enterCount('');
+  assert.equal(all.getAttribute('aria-pressed'), 'false');
+  await view.click('Tümü');
+  assert.equal(document.getElementById('question-count').value, '1');
+  assert.equal(all.getAttribute('aria-pressed'), 'true');
+});

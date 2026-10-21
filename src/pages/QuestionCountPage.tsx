@@ -22,7 +22,7 @@ export function QuestionCountPage({ bank, onStart }: { bank: ContentState<Questi
       <label htmlFor="question-count">Soru Sayısı</label>
       <div className="count-controls">
         <input id="question-count" type="text" inputMode="numeric" pattern="[0-9]*" value={count} placeholder="—" disabled={!ready} aria-invalid={ready && !valid} aria-describedby={ready && !valid ? 'count-error' : undefined} onInput={event => setCount(event.currentTarget.value)} />
-        <button disabled={!ready}>Tümü</button>
+        <button disabled={!ready} aria-pressed={ready && selectedCount === bank.data.length} onClick={() => { if (ready) setCount(String(bank.data.length)); }}>Tümü</button>
       </div>
       {bank.status === 'loading' && showLoading && <p role="status">Yükleniyor…</p>}
       {ready && <p>{bank.data.length} soru hazır.</p>}

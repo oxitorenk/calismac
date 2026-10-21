@@ -127,3 +127,9 @@ button:disabled, input:disabled {
   background: #fff;
   color: #005fcc;
 }
+
+.count-controls button[aria-pressed="true"] {
+  background: #005fcc;
+  border-color: #005fcc;
+  color: #fff;
+}
