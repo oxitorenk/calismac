@@ -3,3 +3,10 @@ dist/
 .idea/
 .run/
 *.local
+.impeccable/
+docs/
+.agents/
+.codex/
+PRODUCT.md
+DESIGN.md
+AGENTS.md
