@@ -196,4 +196,18 @@ test('test screen renders selected session question and relabeled shuffled optio
   assert.equal(options.length, 5);
   assert.deepEqual(options.map(option => option.firstElementChild.textContent), ['A)', 'B)', 'C)', 'D)', 'E)']);
   assert.deepEqual(options.map(option => option.children[1].textContent).sort(), question.options.map(option => option.text).sort());
+  assert.equal(document.querySelector('.question-image'), null);
+});
+
+test('question image appears between question text and options', async t => {
+  const imageUrl = 'https://res.cloudinary.com/demo/image/upload/test.png';
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [{ ...question, imageUrl }] });
+  await view.click('Tasarım');
+  await view.click('Estetik');
+  await view.click('Vize');
+  await view.click('Başla');
+  const image = document.querySelector('.question-image');
+  assert.equal(image.src, imageUrl);
+  assert.equal(image.previousElementSibling.className, 'question-text');
+  assert.equal(image.nextElementSibling.className, 'options');
 });

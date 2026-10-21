@@ -147,6 +147,13 @@ button:disabled, input:disabled {
   overflow-wrap: anywhere;
 }
 
+.question-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1rem auto;
+}
+
 .options {
   display: grid;
   gap: 0.75rem;
