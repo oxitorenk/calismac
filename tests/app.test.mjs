@@ -4,6 +4,8 @@ import { JSDOM } from 'jsdom';
 import { createServer } from 'vite';
 import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
+import Papa from 'papaparse';
+import { GoogleSheetsContentRepository } from '../src/data/GoogleSheetsContentRepository.ts';
 
 let server, App;
 const catalog = [
@@ -28,6 +30,7 @@ async function mount(t, repository) {
   dom.window.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   const root = createRoot(document.getElementById('root'));
+  let launch = 0;
   t.after(async () => {
     await act(async () => root.unmount());
     dom.window.close();
@@ -38,6 +41,7 @@ async function mount(t, repository) {
   await act(async () => root.render(createElement(App, { repository })));
   return {
     text: () => document.body.textContent,
+    reload: async () => { await act(async () => root.render(createElement(App, { repository, key: ++launch }))); },
     click: async label => {
       const button = [...document.querySelectorAll('button')].find(button => button.textContent.includes(label));
       assert.ok(button, `Missing button: ${label}`);
@@ -365,4 +369,37 @@ test('multiple incorrect answers are reviewed once each without reshuffling', as
   await view.click('Sonuçlara Dön');
   assert.match(view.text(), /%0/);
   assert.equal(random.mock.callCount(), calls);
+});
+
+test('published content changes reach the UI after a new launch without a new app build', async t => {
+  const stored = new Map();
+  globalThis.localStorage = { getItem: key => stored.get(key) ?? null, setItem: (key, value) => stored.set(key, value) };
+  t.after(() => { delete globalThis.localStorage; });
+  const catalogHeaders = ['department_id', 'department', 'course_id', 'course', 'midterm_gid', 'final_gid'];
+  const bankHeaders = ['id', 'question', 'image_url', 'option_a', 'option_b', 'option_c', 'option_d', 'option_e', 'answer'];
+  let changed = false;
+  const requestedGids = [];
+  t.mock.method(globalThis, 'fetch', async url => {
+    const gid = new URL(url).searchParams.get('gid');
+    requestedGids.push(gid);
+    return new Response(Papa.unparse(gid === '0'
+      ? [catalogHeaders, ['tasarim', changed ? 'Yeni bölüm' : 'Tasarım', 'estetik', changed ? 'Yeni ders adı' : 'Estetik', '1', '2']]
+      : [bankHeaders, ['stable-question-id', changed ? 'Güncel soru,\nçok satır' : 'Eski soru', changed ? 'https://res.cloudinary.com/demo/image/upload/new.png' : 'https://res.cloudinary.com/demo/image/upload/old.png', 'Bir', 'İki', 'Üç', 'Dört', changed ? 'Yeni seçenek' : 'Beş', changed ? 'E' : 'A']]));
+  });
+  const view = await mount(t, new GoogleSheetsContentRepository());
+  await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
+  assert.match(view.text(), /Eski soru/);
+  assert.ok(document.querySelector('.question-image').src.endsWith('old.png'));
+  await view.click('Bir'); await view.click('Sonuçları Gör');
+  assert.match(view.text(), /%100/);
+  changed = true;
+  await view.reload();
+  await view.click('Yeni bölüm'); await view.click('Yeni ders adı'); await view.click('Vize'); await view.click('Başla');
+  assert.match(view.text(), /Güncel soru,\nçok satır/);
+  assert.doesNotMatch(view.text(), /Eski soru/);
+  assert.ok(document.querySelector('.question-image').src.endsWith('new.png'));
+  await view.click('Yeni seçenek'); await view.click('Sonuçları Gör');
+  assert.match(view.text(), /%100/);
+  assert.deepEqual(requestedGids, ['0', '1', '0', '1']);
+  assert.match(stored.get('calismac:content:v1:bank:estetik:midterm'), /Yeni seçenek/);
 });
