@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 export function TestPage({ session, onAnswer, onNext, review = false }: { session: TestSession; onAnswer?: (optionIndex: number) => void; onNext: () => void; review?: boolean }) {
   const question = session.questions[session.currentQuestionIndex];
   const selected = session.answers[session.currentQuestionIndex];
+  const correctLabel = 'ABCDE'[question.options.findIndex(option => option.correct)];
   const [imageStatus, setImageStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [imageAttempt, setImageAttempt] = useState(0);
   const heading = useRef<HTMLHeadingElement>(null);
@@ -35,7 +36,7 @@ export function TestPage({ session, onAnswer, onNext, review = false }: { sessio
       </div>
       </div>
       {selected !== null && <div className="study-actions">
-      <p role="status">{question.options[selected].correct ? 'Doğru cevap!' : 'Yanlış cevap. Doğru cevap işaretlendi.'}</p>
+      <p role="status">{question.options[selected].correct ? 'Doğru cevap!' : `Yanlış cevap. Doğru cevap: ${correctLabel} seçeneği.`}</p>
       <button className="primary" onClick={onNext}>
         {session.currentQuestionIndex === session.questions.length - 1 ? review ? 'Sonuçlara Dön' : 'Sonuçları Gör' : review ? 'Sonraki' : 'Sonraki Soru'}
       </button>

@@ -294,6 +294,8 @@ test('wrong answer shows chosen and correct options with textual feedback', asyn
   assert.equal(document.querySelector('.study-actions .primary').textContent, 'Sonuçları Gör');
   assert.match(document.querySelector('.correct').textContent, /Üç.*Doğru/s);
   assert.match(document.querySelector('[role="status"]').textContent, /Yanlış cevap/);
+  const correctLabel = document.querySelector('.correct').firstElementChild.textContent[0];
+  assert.equal(document.querySelector('.study-actions [role="status"]').textContent, `Yanlış cevap. Doğru cevap: ${correctLabel} seçeneği.`);
 });
 
 test('next question requires an answer, preserves order and ends at results', async t => {
