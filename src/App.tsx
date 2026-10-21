@@ -29,6 +29,7 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
   const [session, setSession] = useState<TestSession | null>(null);
   const [pendingRoute, setPendingRoute] = useState<Route | null>(null);
   const incomplete = route.page === 'test' && session?.answers.some(answer => answer === null);
+  const activeTest = route.page === 'test' && session !== null;
   function commitNavigation(target: Route, replace = false) {
     if (!['test', 'results', 'wrong'].includes(target.page)) setSession(null);
     if (target.page === 'count') loadBank(target);
@@ -60,12 +61,12 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
       event.returnValue = '';
     }
     window.addEventListener('popstate', onPop);
-    if (incomplete) window.addEventListener('beforeunload', onUnload);
+    if (activeTest) window.addEventListener('beforeunload', onUnload);
     return () => {
       window.removeEventListener('popstate', onPop);
       window.removeEventListener('beforeunload', onUnload);
     };
-  }, [route, session, incomplete]);
+  }, [route, session, incomplete, activeTest]);
   function selectExam(examType: ExamType) {
     if (route.page !== 'course' && route.page !== 'count') return;
     navigate({ ...route, page: 'count', examType });

@@ -432,7 +432,11 @@ test('browser back requests confirmation and Escape continues the same test', as
   await act(async () => document.querySelector('dialog').dispatchEvent(new window.Event('cancel', { cancelable: true })));
   assert.equal(document.querySelector('dialog'), null);
   assert.ok(document.querySelector('.option'));
-  await view.click('Üç'); await view.click('Sonuçları Gör');
+  await view.click('Üç');
+  const answered = new window.Event('beforeunload', { cancelable: true });
+  window.dispatchEvent(answered);
+  assert.equal(answered.defaultPrevented, true);
+  await view.click('Sonuçları Gör');
   const complete = new window.Event('beforeunload', { cancelable: true });
   window.dispatchEvent(complete);
   assert.equal(complete.defaultPrevented, false);
