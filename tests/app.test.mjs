@@ -25,6 +25,7 @@ async function mount(t, repository) {
   const dom = new JSDOM('<div id="root"></div>', { url: 'https://example.com/calismac/' });
   globalThis.window = dom.window;
   globalThis.document = dom.window.document;
+  dom.window.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   const root = createRoot(document.getElementById('root'));
   t.after(async () => {
@@ -249,4 +250,20 @@ test('next question requires an answer, preserves order and ends at results', as
   await view.click('Sonuçları Gör');
   assert.match(view.text(), /Sonuçlar/);
   assert.equal(random.mock.callCount(), randomCalls);
+});
+
+test('active-test exit confirmation preserves progress or discards the test', async t => {
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question] });
+  await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
+  const order = [...document.querySelectorAll('.option')].map(option => option.textContent);
+  await view.click('Estetik');
+  assert.equal(document.querySelector('dialog').open, true);
+  await view.click('Devam Et');
+  assert.equal(document.querySelector('dialog'), null);
+  assert.deepEqual([...document.querySelectorAll('.option')].map(option => option.textContent), order);
+  await act(async () => window.dispatchEvent(new window.PopStateEvent('popstate', { state: { calismacRoute: { page: 'count', departmentId: 'tasarim', courseId: 'estetik', examType: 'midterm' } } })));
+  assert.ok(document.querySelector('dialog'));
+  await view.click('Testten Çık');
+  assert.ok(document.getElementById('question-count'));
+  assert.equal(document.querySelector('.option'), null);
 });

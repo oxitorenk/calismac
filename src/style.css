@@ -199,3 +199,16 @@ button:disabled, input:disabled {
   font-size: 0.875rem;
   font-weight: 600;
 }
+
+dialog {
+  box-sizing: border-box;
+  width: min(90%, 26rem);
+  border: 0;
+  border-radius: 20px;
+  padding: 1.5rem;
+  color: #1c1c1e;
+}
+
+dialog::backdrop {
+  background: #0006;
+}
