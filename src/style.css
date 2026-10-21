@@ -1,7 +1,24 @@
 :root {
+  --color-background: #121214;
+  --color-surface: #222226;
+  --color-surface-active: #34343a;
+  --color-separator: #34343a;
+  --color-control-border: #8e8e99;
+  --color-text: #f2f2f7;
+  --color-text-muted: #b0b0ba;
+  --color-accent: #80baff;
+  --color-accent-active: #a8d0ff;
+  --color-on-accent: #121214;
+  --color-correct-border: #63d78b;
+  --color-correct-background: #173324;
+  --color-correct-text: #a0efba;
+  --color-incorrect-border: #ff8d86;
+  --color-incorrect-background: #3b2023;
+  --color-incorrect-text: #ffb4ae;
+  --color-backdrop: #000a;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #f2f2f7;
-  background: #121214;
+  color: var(--color-text);
+  background: var(--color-background);
   font-synthesis: none;
   color-scheme: dark;
   -webkit-text-size-adjust: 100%;
@@ -48,7 +65,7 @@ button:disabled, input:disabled {
 }
 
 :focus-visible {
-  outline: 3px solid #80baff;
+  outline: 3px solid var(--color-accent);
   outline-offset: 3px;
 }
 
@@ -59,7 +76,7 @@ button:disabled, input:disabled {
   border: 0;
   padding: 0.5rem 0;
   background: transparent;
-  color: #80baff;
+  color: var(--color-accent);
   text-align: left;
   overflow-wrap: anywhere;
 }
@@ -74,7 +91,7 @@ button:disabled, input:disabled {
   margin: 1rem 0;
   border-radius: 16px;
   overflow: hidden;
-  background: #222226;
+  background: var(--color-surface);
 }
 
 .grouped-list li + li {
@@ -87,7 +104,7 @@ button:disabled, input:disabled {
   top: 0;
   left: 1rem;
   right: 0;
-  border-top: 1px solid #34343a;
+  border-top: 1px solid var(--color-separator);
   pointer-events: none;
 }
 
@@ -118,7 +135,7 @@ button:disabled, input:disabled {
 
 .disclosure {
   flex-shrink: 0;
-  color: #b0b0ba;
+  color: var(--color-text-muted);
 }
 
 .selection-shell > header {
@@ -133,13 +150,13 @@ button:disabled, input:disabled {
   margin: 0 0 0.75rem;
   font-size: 1rem;
   font-weight: 600;
-  color: #b0b0ba;
+  color: var(--color-text-muted);
 }
 
 .test-setup > label {
   display: block;
   font-size: 0.875rem;
-  color: #b0b0ba;
+  color: var(--color-text-muted);
 }
 
 .test-setup .count-controls {
@@ -155,12 +172,12 @@ button:disabled, input:disabled {
 
 .bank-summary {
   margin: 0;
-  color: #b0b0ba;
+  color: var(--color-text-muted);
 }
 
 .answer-guidance {
   margin: 1.5rem 0 0;
-  color: #b0b0ba;
+  color: var(--color-text-muted);
   font-size: 0.875rem;
   line-height: 1.6;
 }
@@ -170,7 +187,7 @@ button:disabled, input:disabled {
 }
 
 .list-button:active {
-  background: #34343a;
+  background: var(--color-surface-active);
 }
 
 .primary {
@@ -178,13 +195,13 @@ button:disabled, input:disabled {
   border: 0;
   border-radius: 12px;
   padding: 0.75rem 1rem;
-  background: #80baff;
-  color: #121214;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
   font-weight: 600;
 }
 
 .primary:active {
-  background: #a8d0ff;
+  background: var(--color-accent-active);
 }
 
 .count-controls {
@@ -199,27 +216,27 @@ button:disabled, input:disabled {
   min-width: 0;
   min-height: 48px;
   padding: 0.75rem;
-  border: 1px solid #75757f;
+  border: 1px solid var(--color-control-border);
   border-radius: 10px;
-  background: #222226;
+  background: var(--color-surface);
 }
 
 .count-controls button {
-  border: 1px solid #75757f;
+  border: 1px solid var(--color-control-border);
   border-radius: 10px;
   padding: 0.5rem 1rem;
-  background: #222226;
-  color: #80baff;
+  background: var(--color-surface);
+  color: var(--color-accent);
 }
 
 .count-controls button[aria-pressed="true"] {
-  background: #80baff;
-  border-color: #80baff;
-  color: #121214;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-on-accent);
 }
 
 .progress {
-  color: #b0b0ba;
+  color: var(--color-text-muted);
   text-align: right;
 }
 
@@ -247,10 +264,10 @@ button:disabled, input:disabled {
 .option {
   display: flex;
   gap: 0.75rem;
-  border: 1px solid #55555f;
+  border: 1px solid var(--color-control-border);
   border-radius: 12px;
   padding: 1rem;
-  background: #222226;
+  background: var(--color-surface);
   color: inherit;
   text-align: left;
   line-height: 1.5;
@@ -259,7 +276,7 @@ button:disabled, input:disabled {
 }
 
 .option:active {
-  background: #34343a;
+  background: var(--color-surface-active);
 }
 
 .option:disabled {
@@ -267,15 +284,15 @@ button:disabled, input:disabled {
 }
 
 .option.correct {
-  border-color: #63d78b;
-  background: #173324;
-  color: #a0efba;
+  border-color: var(--color-correct-border);
+  background: var(--color-correct-background);
+  color: var(--color-correct-text);
 }
 
 .option.incorrect {
-  border-color: #ff8d86;
-  background: #3b2023;
-  color: #ffb4ae;
+  border-color: var(--color-incorrect-border);
+  background: var(--color-incorrect-background);
+  color: var(--color-incorrect-text);
 }
 
 .feedback {
@@ -290,12 +307,12 @@ dialog {
   border: 0;
   border-radius: 20px;
   padding: 1.5rem;
-  background: #222226;
-  color: #f2f2f7;
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 dialog::backdrop {
-  background: #000a;
+  background: var(--color-backdrop);
 }
 
 .score {
@@ -313,20 +330,20 @@ dialog::backdrop {
 
 .result-summary {
   margin: 0;
-  color: #b0b0ba;
+  color: var(--color-text-muted);
 }
 
 .result-counts {
   margin: 0;
   padding: 1rem 0;
-  border-block: 1px solid #34343a;
+  border-block: 1px solid var(--color-separator);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
 
 .result-counts dt {
-  color: #b0b0ba;
+  color: var(--color-text-muted);
   font-size: 0.875rem;
 }
 
@@ -344,16 +361,16 @@ dialog::backdrop {
 }
 
 .secondary {
-  border: 1px solid #55555f;
+  border: 1px solid var(--color-control-border);
   border-radius: 12px;
   padding: 0.75rem 1rem;
-  background: #222226;
-  color: #80baff;
+  background: var(--color-surface);
+  color: var(--color-accent);
   font-weight: 600;
 }
 
 .secondary:active {
-  background: #34343a;
+  background: var(--color-surface-active);
 }
 
 .sr-only {
@@ -399,7 +416,7 @@ dialog::backdrop {
 .study-context {
   margin: 0.125rem 0 0;
   font-size: 0.875rem;
-  color: #b0b0ba;
+  color: var(--color-text-muted);
 }
 
 .study-session {
@@ -413,7 +430,7 @@ dialog::backdrop {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  scrollbar-color: #75757f #121214;
+  scrollbar-color: var(--color-control-border) var(--color-background);
   padding: 0.25rem 0.25rem 1rem;
 }
 
@@ -431,9 +448,9 @@ dialog::backdrop {
   flex-shrink: 0;
   display: grid;
   gap: 0.75rem;
-  border-top: 1px solid #34343a;
+  border-top: 1px solid var(--color-separator);
   padding: 0.75rem 0.25rem max(1rem, env(safe-area-inset-bottom));
-  background: #121214;
+  background: var(--color-background);
 }
 
 .study-actions p {
@@ -456,16 +473,16 @@ dialog::backdrop {
   .option:not(:disabled):hover,
   .secondary:not(:disabled):hover,
   .count-controls button:not(:disabled):hover {
-    background: #34343a;
+    background: var(--color-surface-active);
   }
 
   .primary:not(:disabled):hover,
   .count-controls button[aria-pressed="true"]:not(:disabled):hover {
-    background: #a8d0ff;
+    background: var(--color-accent-active);
   }
 
   .back:not(:disabled):hover {
-    color: #a8d0ff;
+    color: var(--color-accent-active);
   }
 }
 
