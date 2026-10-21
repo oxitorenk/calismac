@@ -85,11 +85,13 @@ test('departments are distinct by ID and the entire row navigates', async t => {
 test('courses are filtered by department and preserve the shared course identity', async t => {
   const view = await mount(t, { getCatalog: async () => catalog });
   await view.click('Sanat');
+  assert.equal(document.activeElement, document.querySelector('h1'));
   assert.equal(document.querySelectorAll('.list-button').length, 1);
   assert.match(view.text(), /Estetik/);
   assert.doesNotMatch(view.text(), /Fotoğraf/);
   await view.click('Estetik');
   assert.equal(document.querySelector('h1').textContent, 'Estetik');
+  assert.equal(document.activeElement, document.querySelector('h1'));
   await view.click('Sanat');
   await view.click('Bölümler');
   await view.click('Tasarım');
@@ -204,6 +206,8 @@ test('test screen renders selected session question and relabeled shuffled optio
   await view.click('Başla');
   assert.match(view.text(), /1 \/ 1/);
   assert.match(view.text(), /Soru metni\nİkinci satır/);
+  assert.equal(document.activeElement, document.querySelector('.question-text'));
+  assert.equal(document.activeElement.getAttribute('aria-describedby'), 'question-progress');
   assert.ok(document.querySelector('main.study-shell'));
   assert.equal(document.querySelector('header h1').textContent, 'Estetik');
   assert.equal(document.querySelector('.study-context').textContent, 'Vize');
@@ -301,11 +305,13 @@ test('next question requires an answer, preserves order and ends at results', as
   await view.click('Üç');
   await view.click('Sonraki Soru');
   assert.match(view.text(), /2 \/ 2/);
+  assert.equal(document.activeElement, document.querySelector('.question-text'));
   assert.match(document.querySelector('.question-text').textContent, /İkinci soru/);
   assert.ok([...document.querySelectorAll('.option')].every(button => !button.disabled));
   await view.click('Bir');
   await view.click('Sonuçları Gör');
   assert.match(view.text(), /Sonuçlar/);
+  assert.equal(document.activeElement, document.querySelector('h1'));
   assert.equal(random.mock.callCount(), randomCalls);
 });
 
@@ -374,6 +380,7 @@ test('wrong-answer review keeps original choices, cannot change score and return
   assert.equal(document.querySelector('.result-actions .primary').textContent, 'Yanlışları İncele');
   await view.click('Yanlışları İncele');
   assert.match(view.text(), /1 \/ 1/);
+  assert.equal(document.activeElement, document.querySelector('.question-text'));
   assert.ok(document.querySelector('main.study-shell .study-actions'));
   assert.doesNotMatch(view.text(), /Doğru yapılan soru/);
   assert.deepEqual([...document.querySelectorAll('.option')].map(option => option.textContent), original);

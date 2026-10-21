@@ -86,6 +86,7 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
     : undefined;
   return (
     <AppShell
+      page={route.page}
       compact={route.page === 'test' || route.page === 'wrong'}
       contextLabel={route.page === 'test' || route.page === 'wrong' || route.page === 'results' ? `${route.examType === 'midterm' ? 'Vize' : 'Final'}${route.page !== 'test' && course ? ` · ${course}` : ''}` : undefined}
       title={route.page === 'results' ? 'Sonuçlar' : route.page === 'wrong' ? 'Yanlışlar' : course ?? department ?? 'Çalışmaç'}

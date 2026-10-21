@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 
 interface AppShellProps {
   title: string;
@@ -7,9 +7,14 @@ interface AppShellProps {
   children: ReactNode;
   compact?: boolean;
   contextLabel?: string;
+  page: string;
 }
 
-export function AppShell({ title, backLabel, onBack, children, compact = false, contextLabel }: AppShellProps) {
+export function AppShell({ title, backLabel, onBack, children, compact = false, contextLabel, page }: AppShellProps) {
+  const heading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (!compact) heading.current?.focus();
+  }, [page, compact]);
   return (
     <main className={compact ? 'study-shell' : 'selection-shell'}>
       <header>
@@ -18,8 +23,8 @@ export function AppShell({ title, backLabel, onBack, children, compact = false, 
           <span className={compact ? 'sr-only' : undefined}>{backLabel ?? 'Geri'}</span>
         </button>}
         <div>
-          <h1>{title}</h1>
-          {contextLabel && <p className="study-context">{contextLabel}</p>}
+          <h1 ref={heading} tabIndex={-1} aria-describedby={contextLabel ? 'page-context' : undefined}>{title}</h1>
+          {contextLabel && <p className="study-context" id="page-context">{contextLabel}</p>}
         </div>
       </header>
       {children}

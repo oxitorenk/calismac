@@ -1,16 +1,20 @@
 import type { TestSession } from '../domain/models';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export function TestPage({ session, onAnswer, onNext, review = false }: { session: TestSession; onAnswer?: (optionIndex: number) => void; onNext: () => void; review?: boolean }) {
   const question = session.questions[session.currentQuestionIndex];
   const selected = session.answers[session.currentQuestionIndex];
   const [imageStatus, setImageStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [imageAttempt, setImageAttempt] = useState(0);
+  const heading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    heading.current?.focus({ preventScroll: true });
+  }, [question.id]);
   return (
     <section className="study-session" aria-label={review ? 'Yanlışlar' : 'Test'}>
       <div className="question-content" tabIndex={0} aria-label="Soru ve cevap seçenekleri">
-      <p className="progress">{session.currentQuestionIndex + 1} / {session.questions.length}</p>
-      <h2 className="question-text">{question.text}</h2>
+      <p className="progress" id="question-progress"><span className="sr-only">Soru </span>{session.currentQuestionIndex + 1} / {session.questions.length}</p>
+      <h2 className="question-text" ref={heading} tabIndex={-1} aria-describedby="question-progress">{question.text}</h2>
       {question.imageUrl && <>
         <img key={imageAttempt} className="question-image" src={question.imageUrl} alt="Soruya ait görsel"
           onLoad={() => setImageStatus('ready')} onError={() => setImageStatus('error')} />
