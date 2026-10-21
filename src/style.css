@@ -451,6 +451,24 @@ dialog::backdrop {
   margin-left: 0;
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .list-button:not(:disabled):hover,
+  .option:not(:disabled):hover,
+  .secondary:not(:disabled):hover,
+  .count-controls button:not(:disabled):hover {
+    background: #34343a;
+  }
+
+  .primary:not(:disabled):hover,
+  .count-controls button[aria-pressed="true"]:not(:disabled):hover {
+    background: #a8d0ff;
+  }
+
+  .back:not(:disabled):hover {
+    color: #a8d0ff;
+  }
+}
+
 @media (max-height: 28rem) {
   .study-shell {
     height: auto;
