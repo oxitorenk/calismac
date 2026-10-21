@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { parseQuestionBank, parseQuestionRows } from '../src/data/csv/questionBankParser.ts';
+import Papa from 'papaparse';
 
 const header = 'id,question,image_url,option_a,option_b,option_c,option_d,option_e,answer';
 const row = '2026-guz-ara-05,Soru?,,Bir,İki,Üç,Dört,Beş,C';
@@ -37,4 +38,23 @@ test('each source answer becomes exactly one correct option object', () => {
   }
   const [question] = parseQuestionBank(`${header}\n${row.replace(',,', ',https://res.cloudinary.com/demo/image/upload/a.png,')}`);
   assert.equal(question.imageUrl, 'https://res.cloudinary.com/demo/image/upload/a.png');
+});
+
+test('full bank pipeline preserves quoted multilingual content and validates every required cell', () => {
+  const fields = ['2026-guz-ara-05', 'Türkçe, "alıntı"\nİkinci  satır', '', 'A, B', '"İki"', 'Üç\nDevam', 'Dört', 'Beş', 'c'];
+  const csv = Papa.unparse([header.split(','), fields]);
+  const [question] = parseQuestionBank(`\uFEFF${csv}`);
+  assert.equal(question.text, fields[1]);
+  assert.deepEqual(question.options.map(option => option.text), fields.slice(3, 8));
+  for (let index = 0; index < fields.length; index++) {
+    if (index === 2) continue;
+    const invalid = [...fields];
+    invalid[index] = '';
+    assert.throws(() => parseQuestionBank(Papa.unparse([header.split(','), invalid])));
+  }
+  for (const image of ['javascript:alert(1)', '//example.com/a.png', 'https://user:pass@example.com/a.png']) {
+    const invalid = [...fields];
+    invalid[2] = image;
+    assert.throws(() => parseQuestionBank(Papa.unparse([header.split(','), invalid])));
+  }
 });

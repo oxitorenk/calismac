@@ -29,3 +29,17 @@ test('duplicate pairs and inconsistent names or GIDs are rejected', () => {
     assert.throws(() => parseCatalog(`${header}\n${row}\n${conflict}`));
   }
 });
+
+test('every required catalog field and exact header are validated', () => {
+  const fields = row.split(',');
+  for (let index = 0; index < fields.length; index++) {
+    const invalid = [...fields];
+    invalid[index] = '';
+    assert.throws(() => parseCatalog(`${header}\n${invalid.join(',')}`));
+    const headers = header.split(',');
+    headers[index] = 'unexpected';
+    assert.throws(() => parseCatalog(`${headers.join(',')}\n${row}`));
+  }
+  const renamed = row.replace('tasarim,Tasarım', 'sanat,Tasarım').replace('gorsel-estetik,', 'baska-estetik,');
+  assert.equal(parseCatalog(`${header}\n${row}\n${renamed}`).length, 2);
+});
