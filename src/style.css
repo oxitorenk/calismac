@@ -64,6 +64,10 @@ button:disabled, input:disabled {
   overflow-wrap: anywhere;
 }
 
+.back svg {
+  flex-shrink: 0;
+}
+
 .grouped-list {
   list-style: none;
   padding: 0;
@@ -104,6 +108,12 @@ button:disabled, input:disabled {
 
 .list-button > span {
   min-width: 0;
+}
+
+.list-button:focus-visible,
+.question-content:focus-visible,
+.question-content :focus-visible {
+  outline-offset: -3px;
 }
 
 .disclosure {
