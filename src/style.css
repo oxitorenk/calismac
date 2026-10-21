@@ -148,6 +148,13 @@ button:disabled, input:disabled {
   color: #b0b0ba;
 }
 
+.answer-guidance {
+  margin: 1.5rem 0 0;
+  color: #b0b0ba;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
 .test-setup > .primary:last-child {
   margin-top: 2rem;
 }

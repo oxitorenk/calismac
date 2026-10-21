@@ -31,7 +31,8 @@ export function QuestionCountPage({ bank, onStart, onRetry }: { bank: ContentSta
       </>}
       {ready && <p className="bank-summary">{bank.data.length} soru hazır.</p>}
       {ready && !valid && <p id="count-error">1 ile {bank.data.length} arasında tam sayı gir.</p>}
-      <button className="primary" disabled={!valid} onClick={() => { if (valid) onStart(selectedCount); }}>Başla</button>
+      {ready && <p className="answer-guidance" id="answer-guidance">Bir seçeneğe dokunduğunda yanıtın hemen değerlendirilir ve değiştirilemez.</p>}
+      <button className="primary" disabled={!valid} aria-describedby={ready ? 'answer-guidance' : undefined} onClick={() => { if (valid) onStart(selectedCount); }}>Başla</button>
     </section>
   );
 }

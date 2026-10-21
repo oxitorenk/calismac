@@ -135,6 +135,9 @@ test('ready initializes count once without overwriting manual edits', async t =>
   await view.click('Estetik');
   await view.click('Vize');
   assert.equal(document.getElementById('question-count').value, '20');
+  const start = [...document.querySelectorAll('button')].find(button => button.textContent === 'Başla');
+  assert.equal(start.getAttribute('aria-describedby'), 'answer-guidance');
+  assert.match(document.getElementById('answer-guidance').textContent, /hemen değerlendirilir ve değiştirilemez/);
   await view.enterCount('7');
   assert.equal(document.getElementById('question-count').value, '7');
 });
