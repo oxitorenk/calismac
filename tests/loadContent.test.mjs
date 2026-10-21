@@ -57,3 +57,33 @@ test('cached catalog and banks use the real normalization and validation pipelin
   read.mock.mockImplementation(() => catalog.replace('tasarim,', 'TASARIM,'));
   await assert.rejects(loadContent('https://example.com', 'catalog', parseCatalog));
 });
+
+test('ten-second timeout falls back, then a fresh retry updates the cache', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  let requests = 0;
+  t.mock.method(globalThis, 'fetch', (_url, { signal }) => {
+    requests++;
+    if (requests === 1) return new Promise((_resolve, reject) => signal.addEventListener('abort', () => reject(signal.reason), { once: true }));
+    return Promise.resolve(new Response('valid:new'));
+  });
+  t.mock.method(contentCache, 'read', () => 'valid:cached');
+  const write = t.mock.method(contentCache, 'write', () => {});
+  const pending = loadContent('https://example.com', 'catalog', parse);
+  t.mock.timers.tick(10000);
+  assert.equal(await pending, 'cached');
+  assert.equal(write.mock.callCount(), 0);
+  assert.equal(await loadContent('https://example.com', 'catalog', parse), 'new');
+  assert.equal(requests, 2);
+  assert.deepEqual(write.mock.calls[0].arguments, ['catalog', 'valid:new']);
+});
+
+test('invalid online response can be retried successfully without replacing cache prematurely', async t => {
+  const fetch = t.mock.method(globalThis, 'fetch', async () => new Response('broken'));
+  const write = t.mock.method(contentCache, 'write', () => {});
+  t.mock.method(contentCache, 'read', () => { throw new Error('Must not read cache'); });
+  await assert.rejects(loadContent('https://example.com', 'catalog', parse), /Invalid content/);
+  assert.equal(write.mock.callCount(), 0);
+  fetch.mock.mockImplementation(async () => new Response('valid:repaired'));
+  assert.equal(await loadContent('https://example.com', 'catalog', parse), 'repaired');
+  assert.equal(write.mock.callCount(), 1);
+});
