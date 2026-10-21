@@ -89,12 +89,11 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
     <AppShell
       page={route.page}
       compact={route.page === 'test' || route.page === 'wrong'}
-      contextLabel={route.page === 'test' || route.page === 'wrong' || route.page === 'results' ? `${route.examType === 'midterm' ? 'Vize' : 'Final'}${route.page !== 'test' && course ? ` · ${course}` : ''}` : undefined}
-      title={route.page === 'results' ? 'Sonuçlar' : route.page === 'wrong' ? 'Yanlışlar' : course ?? department ?? 'Çalışmaç'}
-      backLabel={route.page === 'courses' ? 'Bölümler' : route.page === 'wrong' ? 'Sonuçlar' : route.page === 'course' ? department : course}
+      contextLabel={route.page === 'count' || route.page === 'test' || route.page === 'wrong' || route.page === 'results' ? `${route.examType === 'midterm' ? 'Vize' : 'Final'}${route.page !== 'test' && route.page !== 'count' && course ? ` · ${course}` : ''}` : undefined}
+      title={route.page === 'results' ? 'Sonuçlar' : route.page === 'wrong' ? 'Yanlışlar' : course ?? department ?? 'Bölümler'}
+      backLabel={route.page === 'courses' ? 'Bölümler' : route.page === 'wrong' ? 'Sonuçlar' : route.page === 'count' ? 'Sınav Tipi' : route.page === 'course' ? 'Dersler' : course}
       onBack={route.page === 'departments' || route.page === 'results' ? undefined : () => navigate(parentRoute(route))}
     >
-      {route.page === 'departments' && <h2>Bölümler</h2>}
       {state.status === 'loading' && <p role="status">Bölümler yükleniyor…</p>}
       {state.status === 'error' && <>
         <p role="alert">Bölümler yüklenemedi.</p>
@@ -106,7 +105,6 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
       />}
       {state.status === 'ready' && route.page === 'course' && <CoursePage onSelect={selectExam} />}
       {route.page === 'count' && <>
-        <h2>{route.examType === 'midterm' ? 'Vize' : 'Final'}</h2>
         <QuestionCountPage bank={bank} onRetry={() => selectExam(route.examType)} onStart={count => {
           if (bank.status !== 'ready') return;
           setSession(createTestSession(bank.data, count, route.departmentId, route.courseId, route.examType));

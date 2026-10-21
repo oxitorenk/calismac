@@ -48,6 +48,8 @@ async function mount(t, repository) {
       await act(async () => button.click());
     },
     enterCount: async value => {
+      const custom = [...document.querySelectorAll('button')].find(button => button.textContent === 'Özel');
+      if (custom && custom.getAttribute('aria-pressed') !== 'true') await act(async () => custom.click());
       const input = document.getElementById('question-count');
       Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(input, value);
       await act(async () => input.dispatchEvent(new window.Event('input', { bubbles: true })));
@@ -92,7 +94,7 @@ test('courses are filtered by department and preserve the shared course identity
   await view.click('Estetik');
   assert.equal(document.querySelector('h1').textContent, 'Estetik');
   assert.equal(document.activeElement, document.querySelector('h1'));
-  await view.click('Sanat');
+  await view.click('Dersler');
   await view.click('Bölümler');
   await view.click('Tasarım');
   assert.equal(document.querySelectorAll('.list-button').length, 2);
@@ -109,7 +111,10 @@ test('only the selected exam bank is requested at selection time', async t => {
   assert.deepEqual(requests, []);
   await view.click('Final');
   assert.deepEqual(requests, [['tasarim', 'estetik', 'final']]);
-  assert.match(view.text(), /1 soru hazır/);
+  assert.equal(document.getElementById('question-count').value, '1');
+  assert.equal(document.querySelector('.back').textContent.trim(), 'Sınav Tipi');
+  assert.equal(document.getElementById('page-context').textContent, 'Final');
+  assert.equal(document.querySelector('main > h2'), null);
 });
 
 test('bank loading stays on count screen with delayed indicator and disabled controls', async t => {
@@ -137,9 +142,7 @@ test('ready initializes count once without overwriting manual edits', async t =>
   await view.click('Estetik');
   await view.click('Vize');
   assert.equal(document.getElementById('question-count').value, '20');
-  const start = [...document.querySelectorAll('button')].find(button => button.textContent === 'Başla');
-  assert.equal(start.getAttribute('aria-describedby'), 'answer-guidance');
-  assert.match(document.getElementById('answer-guidance').textContent, /hemen değerlendirilir ve değiştirilemez/);
+  assert.equal(document.querySelector('.bank-summary, .answer-guidance'), null);
   await view.enterCount('7');
   assert.equal(document.getElementById('question-count').value, '7');
 });
@@ -166,7 +169,26 @@ test('question count accepts only integers within the bank bounds', async t => {
   }
 });
 
-test('all selection is derived from the count, including manual input', async t => {
+test('presets replace custom counts and hide the custom field', async t => {
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => Array.from({ length: 50 }, () => ({})) });
+  await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize');
+  const preset = label => [...document.querySelectorAll('.test-setup button')].find(button => button.textContent === label);
+  assert.equal(preset('20').getAttribute('aria-pressed'), 'true');
+  assert.equal(document.getElementById('custom-count').hidden, true);
+  await act(async () => preset('10').click());
+  assert.equal(document.getElementById('question-count').value, '10');
+  await view.enterCount('7');
+  assert.equal(document.getElementById('custom-count').hidden, false);
+  assert.equal(preset('Özel').getAttribute('aria-pressed'), 'true');
+  assert.deepEqual([...document.querySelectorAll('.count-presets button')].map(button => button.textContent), ['10', '20', 'Özel', 'Tümü']);
+  await act(async () => preset('20').click());
+  assert.equal(document.getElementById('question-count').value, '20');
+  assert.equal(document.getElementById('custom-count').hidden, true);
+  await view.click('Tümü');
+  assert.equal(document.getElementById('question-count').value, '50');
+});
+
+test('all selection gives way to custom input and can be reselected', async t => {
   const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [{}] });
   await view.click('Tasarım');
   await view.click('Estetik');
@@ -177,7 +199,7 @@ test('all selection is derived from the count, including manual input', async t 
   await view.enterCount('');
   assert.equal(all.getAttribute('aria-pressed'), 'false');
   await view.enterCount('1');
-  assert.equal(all.getAttribute('aria-pressed'), 'true');
+  assert.equal(all.getAttribute('aria-pressed'), 'false');
   await view.enterCount('0');
   assert.equal(all.getAttribute('aria-pressed'), 'false');
   await view.click('Tümü');
@@ -220,7 +242,7 @@ test('test screen renders selected session question and relabeled shuffled optio
   assert.equal(document.querySelector('.study-actions'), null);
   const options = [...document.querySelectorAll('.option')];
   assert.equal(options.length, 5);
-  assert.deepEqual(options.map(option => option.firstElementChild.textContent), ['A)', 'B)', 'C)', 'D)', 'E)']);
+  assert.deepEqual(options.map(option => option.firstElementChild.textContent), ['A', 'B', 'C', 'D', 'E']);
   assert.deepEqual(options.map(option => option.children[1].textContent).sort(), question.options.map(option => option.text).sort());
   assert.equal(document.querySelector('.question-image'), null);
 });
@@ -374,7 +396,7 @@ test('all-correct results hide review and home returns to departments without co
   assert.match(document.querySelector('.study-context').textContent, /Vize.*Estetik/);
   assert.doesNotMatch(view.text(), /Yanlışları İncele/);
   await view.click('Ana Sayfa');
-  assert.equal(document.querySelector('h1').textContent, 'Çalışmaç');
+  assert.equal(document.querySelector('h1').textContent, 'Bölümler');
   assert.equal(document.querySelector('dialog'), null);
 });
 
@@ -406,7 +428,7 @@ test('new tests discard previous answers and history cannot restore a discarded 
   await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
   await view.click('Bir'); await view.click('Sonuçları Gör'); await view.click('Ana Sayfa');
   await act(async () => window.dispatchEvent(new window.PopStateEvent('popstate', { state: { calismacRoute: { page: 'results', departmentId: 'tasarim', courseId: 'estetik', examType: 'midterm' } } })));
-  assert.equal(document.querySelector('h1').textContent, 'Çalışmaç');
+  assert.equal(document.querySelector('h1').textContent, 'Bölümler');
   await view.click('Tasarım'); await view.click('Estetik'); await view.click('Final'); await view.click('Başla');
   assert.ok([...document.querySelectorAll('.option')].every(option => !option.disabled));
   assert.equal(document.querySelector('.incorrect'), null);
@@ -421,7 +443,7 @@ test('a late response from a previous bank cannot overwrite the selected bank', 
       ? new Promise(resolve => { resolveOld = resolve; }) : [question, { ...question, id: 'second' }],
   });
   await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize');
-  await view.click('Estetik'); await view.click('Final');
+  await view.click('Sınav Tipi'); await view.click('Final');
   assert.equal(document.getElementById('question-count').value, '2');
   await act(async () => resolveOld([question]));
   assert.equal(document.getElementById('question-count').value, '2');

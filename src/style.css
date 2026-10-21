@@ -1,14 +1,14 @@
 :root {
-  --color-background: #121214;
-  --color-surface: #222226;
-  --color-surface-active: #34343a;
-  --color-separator: #34343a;
-  --color-control-border: #8e8e99;
-  --color-text: #f2f2f7;
-  --color-text-muted: #b0b0ba;
-  --color-accent: #80baff;
-  --color-accent-active: #a8d0ff;
-  --color-on-accent: #121214;
+  --color-background: #16181b;
+  --color-surface: #24272c;
+  --color-surface-active: #363b42;
+  --color-separator: #363b42;
+  --color-control-border: #929ca8;
+  --color-text: #f0f1f3;
+  --color-text-muted: #abb3bf;
+  --color-accent: #b3ceda;
+  --color-accent-active: #cee1e9;
+  --color-on-accent: #16181b;
   --color-correct-border: #63d78b;
   --color-correct-background: #173324;
   --color-correct-text: #a0efba;
@@ -26,11 +26,39 @@
 
 body {
   margin: 0;
+  -webkit-font-smoothing: antialiased;
+  scrollbar-color: var(--color-control-border) var(--color-background);
 }
+
+::selection { background: var(--color-accent); color: var(--color-on-accent); }
+input { caret-color: var(--color-accent); }
+
+.selection-shell { padding-top: max(3rem, env(safe-area-inset-top)); }
+.selection-shell > header { padding-bottom: 0.5rem; }
+.selection-shell > header h1 { margin-top: 0; }
+.selection-shell .grouped-list { margin-top: 1.5rem; }
+.list-button { font-size: 1.125rem; font-weight: 500; line-height: 1.45; letter-spacing: -0.015em; }
+.disclosure { width: 16px; color: var(--color-accent); }
+
+.session-progress {
+  flex-shrink: 0;
+  width: 100%;
+  height: 3px;
+  margin: 0 0 1.5rem;
+  border: 0;
+  border-radius: 2px;
+  overflow: hidden;
+  appearance: none;
+  background: var(--color-separator);
+  color: var(--color-accent);
+}
+.session-progress::-webkit-progress-bar { background: var(--color-separator); }
+.session-progress::-webkit-progress-value { background: var(--color-accent); }
+.session-progress::-moz-progress-bar { background: var(--color-accent); }
 
 main {
   box-sizing: border-box;
-  max-width: 42rem;
+  max-width: 48rem;
   min-height: 100dvh;
   margin: 0 auto;
   padding: max(2rem, env(safe-area-inset-top)) max(1.5rem, env(safe-area-inset-right)) max(2rem, env(safe-area-inset-bottom)) max(1.5rem, env(safe-area-inset-left));
@@ -38,7 +66,7 @@ main {
 
 h1 {
   margin: 0.75rem 0 1.5rem;
-  font-size: 2rem;
+  font-size: clamp(2rem, 5vw, 2.75rem);
   line-height: 1.2;
   letter-spacing: -0.025em;
   overflow-wrap: anywhere;
@@ -68,6 +96,9 @@ button:disabled, input:disabled {
   outline: 3px solid var(--color-accent);
   outline-offset: 3px;
 }
+
+/* Headings receive navigation focus; interactive controls keep their focus ring. */
+h1[tabindex="-1"]:focus, h2[tabindex="-1"]:focus { outline: none; }
 
 .back {
   display: inline-flex;
@@ -114,9 +145,9 @@ button:disabled, input:disabled {
   align-items: center;
   gap: 1rem;
   width: 100%;
-  min-height: 60px;
+  min-height: 68px;
   border: 0;
-  padding: 1rem;
+  padding: 1.25rem;
   color: inherit;
   background: transparent;
   text-align: left;
@@ -153,37 +184,11 @@ button:disabled, input:disabled {
   color: var(--color-text-muted);
 }
 
-.test-setup > label {
-  display: block;
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
-}
-
-.test-setup .count-controls {
-  margin-bottom: 0.75rem;
-}
-
 .test-setup input {
   font-size: 1.5rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: inherit;
-}
-
-.bank-summary {
-  margin: 0;
-  color: var(--color-text-muted);
-}
-
-.answer-guidance {
-  margin: 1.5rem 0 0;
-  color: var(--color-text-muted);
-  font-size: 0.875rem;
-  line-height: 1.6;
-}
-
-.test-setup > .primary:last-child {
-  margin-top: 2rem;
 }
 
 .list-button:active {
@@ -202,37 +207,6 @@ button:disabled, input:disabled {
 
 .primary:active {
   background: var(--color-accent-active);
-}
-
-.count-controls {
-  display: flex;
-  gap: 0.75rem;
-  margin: 0.75rem 0 1.5rem;
-}
-
-.count-controls input {
-  box-sizing: border-box;
-  width: 100%;
-  min-width: 0;
-  min-height: 48px;
-  padding: 0.75rem;
-  border: 1px solid var(--color-control-border);
-  border-radius: 10px;
-  background: var(--color-surface);
-}
-
-.count-controls button {
-  border: 1px solid var(--color-control-border);
-  border-radius: 10px;
-  padding: 0.5rem 1rem;
-  background: var(--color-surface);
-  color: var(--color-accent);
-}
-
-.count-controls button[aria-pressed="true"] {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-on-accent);
 }
 
 .progress {
@@ -266,7 +240,7 @@ button:disabled, input:disabled {
   gap: 0.75rem;
   border: 1px solid var(--color-control-border);
   border-radius: 12px;
-  padding: 1rem;
+  padding: 1.25rem;
   background: var(--color-surface);
   color: inherit;
   text-align: left;
@@ -305,7 +279,7 @@ dialog {
   box-sizing: border-box;
   width: min(90%, 26rem);
   border: 0;
-  border-radius: 20px;
+  border-radius: 16px;
   padding: 1.5rem;
   background: var(--color-surface);
   color: var(--color-text);
@@ -314,6 +288,11 @@ dialog {
 dialog::backdrop {
   background: var(--color-backdrop);
 }
+
+dialog h2 { margin: 0; font-size: 1.25rem; line-height: 1.4; }
+dialog p { margin: 0.75rem 0 1.5rem; color: var(--color-text-muted); }
+.dialog-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+.dialog-actions .destructive { color: var(--color-incorrect-text); border-color: var(--color-incorrect-border); }
 
 .score {
   margin: 1.5rem 0;
@@ -472,12 +451,12 @@ dialog::backdrop {
   .list-button:not(:disabled):hover,
   .option:not(:disabled):hover,
   .secondary:not(:disabled):hover,
-  .count-controls button:not(:disabled):hover {
+  .count-presets button:not(:disabled):hover {
     background: var(--color-surface-active);
   }
 
   .primary:not(:disabled):hover,
-  .count-controls button[aria-pressed="true"]:not(:disabled):hover {
+  .count-presets button[aria-pressed="true"]:not(:disabled):hover {
     background: var(--color-accent-active);
   }
 
@@ -493,4 +472,44 @@ dialog::backdrop {
   .question-content {
     overflow-y: visible;
   }
+}
+
+/* Graphite surfaces share one rhythm across selection, study and results. */
+.setup-shell { display: flex; flex-direction: column; }
+.setup-shell .page-heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 1rem; }
+.setup-shell .study-context { margin: 0; font-size: 1rem; }
+.test-setup { display: flex; flex-direction: column; align-items: flex-start; padding-top: 1rem; }
+
+.test-setup > .primary:last-child { margin-top: 2rem; }
+.test-setup h2 { margin: 0 0 1.25rem; font-size: 1.5rem; line-height: 1.35; letter-spacing: -0.025em; }
+.count-presets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.625rem; width: 100%; }
+.count-presets button { padding: 0.75rem 0.25rem; min-height: 54px; border: 1px solid var(--color-control-border); border-radius: 12px; background: var(--color-surface); color: var(--color-text); font-size: 1.125rem; font-weight: 500; }
+.count-presets button[aria-pressed="true"] { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-on-accent); }
+.custom-count { margin-top: 1.5rem; width: 100%; }
+.custom-count label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--color-text-muted); }
+.custom-count input { box-sizing: border-box; width: 100%; min-height: 48px; border: 1px solid var(--color-control-border); border-radius: 10px; padding: 0.625rem 0.875rem; background: var(--color-surface); }
+.primary, .secondary { min-height: 54px; }
+.study-shell { padding-top: max(1.25rem, env(safe-area-inset-top)); }
+.study-shell > header { padding-bottom: 1.25rem; }
+.study-shell .back { background: var(--color-surface); border-radius: 12px; }
+.study-shell h1 { font-size: 1.0625rem; }
+.study-session .progress { text-align: left; margin-bottom: 1.25rem; }
+.study-session .question-text { font-size: 1.25rem; font-weight: 500; line-height: 1.65; }
+.study-session .option { align-items: start; gap: 1rem; padding: 1rem; }
+.option-letter { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 8px; background: var(--color-surface-active); color: var(--color-text-muted); font-size: 0.8125rem; font-weight: 600; }
+.correct .option-letter, .incorrect .option-letter { background: transparent; color: inherit; }
+.study-actions { padding-top: 1rem; }
+.test-results { padding-top: 1rem; }
+.score { font-size: clamp(3.5rem, 12vw, 5rem); font-weight: 500; color: var(--color-accent); }
+.result-counts { padding-block: 1.5rem; }
+.result-counts > div:first-child dd { color: var(--color-correct-text); }
+.result-counts > div:last-child dd { color: var(--color-incorrect-text); }
+button { transition: background-color 160ms ease-out, color 160ms ease-out; }
+@media (min-width: 48rem) {
+  .selection-shell { padding-top: 4rem; }
+  .study-shell { padding-top: 2rem; }
+  .study-session .question-text { font-size: 1.375rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  button { transition: none; }
 }

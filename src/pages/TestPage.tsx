@@ -13,6 +13,7 @@ export function TestPage({ session, onAnswer, onNext, review = false }: { sessio
   }, [question.id]);
   return (
     <section className="study-session" aria-label={review ? 'Yanlışlar' : 'Test'}>
+      <progress className="session-progress" value={session.currentQuestionIndex + 1} max={session.questions.length} aria-label="Test ilerlemesi" />
       <div className="question-content" role="region" tabIndex={0} aria-label="Soru ve cevap seçenekleri">
       <p className="progress" id="question-progress"><span className="sr-only">Soru </span>{session.currentQuestionIndex + 1} / {session.questions.length}</p>
       <h2 className="question-text" ref={heading} tabIndex={-1} aria-describedby="question-progress">{question.text}</h2>
@@ -32,7 +33,7 @@ export function TestPage({ session, onAnswer, onNext, review = false }: { sessio
       <div className="options" role="group" aria-label="Cevap seçenekleri">
         {question.options.map((option, index) => (
           <button className={`option${selected !== null && option.correct ? ' correct' : selected === index ? ' incorrect' : ''}`} key={index} disabled={review || selected !== null || (!!question.imageUrl && imageStatus !== 'ready')} aria-pressed={selected === index} onClick={() => onAnswer?.(index)}>
-            <span>{'ABCDE'[index]})</span> <span>{option.text}</span>
+            <span className="option-letter">{'ABCDE'[index]}</span> <span>{option.text}</span>
             {selected !== null && option.correct && <span className="feedback">✓ Doğru{selected === index ? ' — Cevabın' : ''}</span>}
             {selected === index && !option.correct && <span className="feedback">✕ Yanlış — Cevabın</span>}
           </button>
