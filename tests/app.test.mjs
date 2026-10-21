@@ -201,6 +201,11 @@ test('test screen renders selected session question and relabeled shuffled optio
   await view.click('Başla');
   assert.match(view.text(), /1 \/ 1/);
   assert.match(view.text(), /Soru metni\nİkinci satır/);
+  assert.ok(document.querySelector('main.study-shell'));
+  assert.equal(document.querySelector('header h1').textContent, 'Estetik');
+  assert.equal(document.querySelector('.study-context').textContent, 'Vize');
+  assert.equal(document.querySelector('.question-content').getAttribute('tabindex'), '0');
+  assert.equal(document.querySelector('.study-actions'), null);
   const options = [...document.querySelectorAll('.option')];
   assert.equal(options.length, 5);
   assert.deepEqual(options.map(option => option.firstElementChild.textContent), ['A)', 'B)', 'C)', 'D)', 'E)']);
@@ -278,6 +283,8 @@ test('wrong answer shows chosen and correct options with textual feedback', asyn
   assert.equal(document.querySelector('.correct'), null);
   await view.click('Bir');
   assert.match(document.querySelector('.incorrect').textContent, /Bir.*Yanlış/s);
+  assert.equal(document.querySelector('.study-actions').previousElementSibling.className, 'question-content');
+  assert.equal(document.querySelector('.study-actions .primary').textContent, 'Sonuçları Gör');
   assert.match(document.querySelector('.correct').textContent, /Üç.*Doğru/s);
   assert.match(document.querySelector('[role="status"]').textContent, /Yanlış cevap/);
 });
@@ -360,6 +367,7 @@ test('wrong-answer review keeps original choices, cannot change score and return
   assert.match(view.text(), /%50/);
   await view.click('Yanlışları İncele');
   assert.match(view.text(), /1 \/ 1/);
+  assert.ok(document.querySelector('main.study-shell .study-actions'));
   assert.doesNotMatch(view.text(), /Doğru yapılan soru/);
   assert.deepEqual([...document.querySelectorAll('.option')].map(option => option.textContent), original);
   assert.ok([...document.querySelectorAll('.option')].every(option => option.disabled));

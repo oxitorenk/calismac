@@ -220,3 +220,107 @@ dialog::backdrop {
   font-weight: 700;
   letter-spacing: -0.06em;
 }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.study-shell {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: max(0.5rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) 0 max(1rem, env(safe-area-inset-left));
+}
+
+.study-shell > header {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.study-shell .back {
+  display: grid;
+  place-items: center;
+}
+
+.study-shell h1 {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.4;
+  letter-spacing: normal;
+  overflow-wrap: anywhere;
+}
+
+.study-context {
+  margin: 0.125rem 0 0;
+  font-size: 0.875rem;
+  color: #b0b0ba;
+}
+
+.study-session {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.question-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-color: #75757f #121214;
+  padding: 0.25rem 0.25rem 1rem;
+}
+
+.study-session .progress {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.study-session .question-text {
+  margin: 0 0 1.5rem;
+}
+
+.study-actions {
+  flex-shrink: 0;
+  display: grid;
+  gap: 0.75rem;
+  border-top: 1px solid #34343a;
+  padding: 0.75rem 0.25rem max(1rem, env(safe-area-inset-bottom));
+  background: #121214;
+}
+
+.study-actions p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.study-session .option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.study-session .feedback {
+  grid-column: 2;
+  margin-left: 0;
+}
+
+@media (max-height: 28rem) {
+  .study-shell {
+    height: auto;
+  }
+  .question-content {
+    overflow-y: visible;
+  }
+}

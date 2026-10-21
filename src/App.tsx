@@ -85,7 +85,13 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
     ? state.data.find(entry => entry.courseId === route.courseId)?.course
     : undefined;
   return (
-    <AppShell title={route.page === 'results' ? 'Sonuçlar' : route.page === 'wrong' ? 'Yanlışlar' : course ?? department ?? 'Çalışmaç'} backLabel={route.page === 'courses' ? 'Bölümler' : route.page === 'wrong' ? 'Sonuçlar' : route.page === 'course' ? department : course} onBack={route.page === 'departments' || route.page === 'results' ? undefined : () => navigate(parentRoute(route))}>
+    <AppShell
+      compact={route.page === 'test' || route.page === 'wrong'}
+      contextLabel={route.page === 'test' || route.page === 'wrong' ? `${route.examType === 'midterm' ? 'Vize' : 'Final'}${route.page === 'wrong' && course ? ` · ${course}` : ''}` : undefined}
+      title={route.page === 'results' ? 'Sonuçlar' : route.page === 'wrong' ? 'Yanlışlar' : course ?? department ?? 'Çalışmaç'}
+      backLabel={route.page === 'courses' ? 'Bölümler' : route.page === 'wrong' ? 'Sonuçlar' : route.page === 'course' ? department : course}
+      onBack={route.page === 'departments' || route.page === 'results' ? undefined : () => navigate(parentRoute(route))}
+    >
       {route.page === 'departments' && <h2>Bölümler</h2>}
       {state.status === 'loading' && <p role="status">Bölümler yükleniyor…</p>}
       {state.status === 'error' && <>

@@ -7,7 +7,8 @@ export function TestPage({ session, onAnswer, onNext, review = false }: { sessio
   const [imageStatus, setImageStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [imageAttempt, setImageAttempt] = useState(0);
   return (
-    <section aria-label={review ? 'Yanlışlar' : 'Test'}>
+    <section className="study-session" aria-label={review ? 'Yanlışlar' : 'Test'}>
+      <div className="question-content" tabIndex={0} aria-label="Soru ve cevap seçenekleri">
       <p className="progress">{session.currentQuestionIndex + 1} / {session.questions.length}</p>
       <h2 className="question-text">{question.text}</h2>
       {question.imageUrl && <>
@@ -28,10 +29,13 @@ export function TestPage({ session, onAnswer, onNext, review = false }: { sessio
           </button>
         ))}
       </div>
-      {selected !== null && <p role="status">{question.options[selected].correct ? 'Doğru cevap!' : 'Yanlış cevap. Doğru cevap işaretlendi.'}</p>}
-      {selected !== null && <button className="primary" onClick={onNext}>
+      </div>
+      {selected !== null && <div className="study-actions">
+      <p role="status">{question.options[selected].correct ? 'Doğru cevap!' : 'Yanlış cevap. Doğru cevap işaretlendi.'}</p>
+      <button className="primary" onClick={onNext}>
         {session.currentQuestionIndex === session.questions.length - 1 ? review ? 'Sonuçlara Dön' : 'Sonuçları Gör' : review ? 'Sonraki' : 'Sonraki Soru'}
-      </button>}
+      </button>
+      </div>}
     </section>
   );
 }
