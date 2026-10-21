@@ -67,3 +67,17 @@ test('departments are distinct by ID and the entire row navigates', async t => {
   await view.click('Bölümler');
   assert.equal(document.querySelectorAll('.list-button').length, 2);
 });
+
+test('courses are filtered by department and preserve the shared course identity', async t => {
+  const view = await mount(t, { getCatalog: async () => catalog });
+  await view.click('Sanat');
+  assert.equal(document.querySelectorAll('.list-button').length, 1);
+  assert.match(view.text(), /Estetik/);
+  assert.doesNotMatch(view.text(), /Fotoğraf/);
+  await view.click('Estetik');
+  assert.equal(document.querySelector('h1').textContent, 'Estetik');
+  await view.click('Sanat');
+  await view.click('Bölümler');
+  await view.click('Tasarım');
+  assert.equal(document.querySelectorAll('.list-button').length, 2);
+});
