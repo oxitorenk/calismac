@@ -155,10 +155,14 @@ test('question count accepts only integers within the bank bounds', async t => {
   for (const value of ['', '0', '6', '-1', '1.5', '1e1', 'abc']) {
     await view.enterCount(value);
     assert.equal(start.disabled, true, value);
+    assert.equal(document.getElementById('question-count').getAttribute('aria-invalid'), 'true');
+    assert.equal(document.getElementById('question-count').getAttribute('aria-describedby'), 'count-error');
+    assert.equal(document.getElementById('count-error').getAttribute('role'), 'alert');
   }
   for (const value of ['1', '5']) {
     await view.enterCount(value);
     assert.equal(start.disabled, false, value);
+    assert.equal(document.getElementById('count-error'), null);
   }
 });
 
