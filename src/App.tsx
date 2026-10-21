@@ -48,7 +48,7 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
       let target: Route = event.state?.calismacRoute ?? { page: 'departments' };
       if (target.page === 'test' || target.page === 'results' || target.page === 'wrong') {
         if (!session || session.departmentId !== target.departmentId || session.courseId !== target.courseId || session.examType !== target.examType) target = { page: 'departments' };
-        else if (target.page !== 'test' && session.answers.some(answer => answer === null)) target = { ...target, page: 'test' };
+        else if (incomplete || (target.page !== 'test' && session.answers.some(answer => answer === null))) target = { ...target, page: 'count' };
       }
       if (incomplete) {
         window.history.pushState({ calismacRoute: route }, '');
