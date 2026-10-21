@@ -38,7 +38,7 @@ input { caret-color: var(--color-accent); }
 .selection-shell > header h1 { margin-top: 0; }
 .selection-shell .grouped-list { margin-top: 1.5rem; }
 .list-button { font-size: 1.125rem; font-weight: 500; line-height: 1.45; letter-spacing: -0.015em; }
-.disclosure { width: 16px; color: var(--color-accent); }
+.disclosure { width: 16px; }
 
 .session-progress {
   flex-shrink: 0;
@@ -133,7 +133,7 @@ h1[tabindex="-1"]:focus, h2[tabindex="-1"]:focus { outline: none; }
   content: '';
   position: absolute;
   top: 0;
-  left: 1rem;
+  left: 1.25rem;
   right: 0;
   border-top: 1px solid var(--color-separator);
   pointer-events: none;
@@ -175,13 +175,6 @@ h1[tabindex="-1"]:focus, h2[tabindex="-1"]:focus { outline: none; }
 
 .selection-shell > header h1 {
   margin-bottom: 0;
-}
-
-.selection-shell > h2 {
-  margin: 0 0 0.75rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--color-text-muted);
 }
 
 .test-setup input {
@@ -278,6 +271,8 @@ h1[tabindex="-1"]:focus, h2[tabindex="-1"]:focus { outline: none; }
 dialog {
   box-sizing: border-box;
   width: min(90%, 26rem);
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
   border: 0;
   border-radius: 16px;
   padding: 1.5rem;
@@ -485,9 +480,14 @@ dialog p { margin: 0.75rem 0 1.5rem; color: var(--color-text-muted); }
 .count-presets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.625rem; width: 100%; }
 .count-presets button { padding: 0.75rem 0.25rem; min-height: 54px; border: 1px solid var(--color-control-border); border-radius: 12px; background: var(--color-surface); color: var(--color-text); font-size: 1.125rem; font-weight: 500; }
 .count-presets button[aria-pressed="true"] { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-on-accent); }
+.count-presets button:not(:disabled):active { background: var(--color-surface-active); }
+.count-presets button[aria-pressed="true"]:not(:disabled):active { background: var(--color-accent-active); }
+.back:not(:disabled):active { color: var(--color-accent-active); }
 .custom-count { margin-top: 1.5rem; width: 100%; }
 .custom-count label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--color-text-muted); }
 .custom-count input { box-sizing: border-box; width: 100%; min-height: 48px; border: 1px solid var(--color-control-border); border-radius: 10px; padding: 0.625rem 0.875rem; background: var(--color-surface); }
+.custom-count input[aria-invalid="true"] { border-color: var(--color-incorrect-border); }
+#count-error { margin: 0.75rem 0 0; color: var(--color-incorrect-text); font-size: 0.875rem; }
 .primary, .secondary { min-height: 54px; }
 .study-shell { padding-top: max(1.25rem, env(safe-area-inset-top)); }
 .study-shell > header { padding-bottom: 1.25rem; }
