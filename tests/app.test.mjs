@@ -162,3 +162,20 @@ test('all selection is derived from the count, including manual input', async t 
   assert.equal(document.getElementById('question-count').value, '1');
   assert.equal(all.getAttribute('aria-pressed'), 'true');
 });
+
+test('bank failure retries on the same screen and initializes the new bank', async t => {
+  let calls = 0;
+  const view = await mount(t, {
+    getCatalog: async () => catalog,
+    getQuestionBank: async () => { if (++calls === 1) throw new Error('invalid content'); return [{}, {}, {}]; },
+  });
+  await view.click('Tasarım');
+  await view.click('Estetik');
+  await view.click('Vize');
+  assert.match(view.text(), /Sorular yüklenemedi/);
+  assert.equal(document.getElementById('question-count').disabled, true);
+  await view.click('Tekrar Dene');
+  assert.equal(document.getElementById('question-count').value, '3');
+  assert.doesNotMatch(view.text(), /Sorular yüklenemedi/);
+  assert.equal(calls, 2);
+});

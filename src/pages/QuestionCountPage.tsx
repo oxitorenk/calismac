@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { ContentState } from '../app/useContent';
 import type { Question } from '../domain/models';
 
-export function QuestionCountPage({ bank, onStart }: { bank: ContentState<Question[]>; onStart: (count: number) => void }) {
+export function QuestionCountPage({ bank, onStart, onRetry }: { bank: ContentState<Question[]>; onStart: (count: number) => void; onRetry: () => void }) {
   const [showLoading, setShowLoading] = useState(false);
   const [count, setCount] = useState('');
   const ready = bank.status === 'ready';
@@ -25,6 +25,10 @@ export function QuestionCountPage({ bank, onStart }: { bank: ContentState<Questi
         <button disabled={!ready} aria-pressed={ready && selectedCount === bank.data.length} onClick={() => { if (ready) setCount(String(bank.data.length)); }}>Tümü</button>
       </div>
       {bank.status === 'loading' && showLoading && <p role="status">Yükleniyor…</p>}
+      {bank.status === 'error' && <>
+        <p role="alert">Sorular yüklenemedi.</p>
+        <button className="primary" onClick={onRetry}>Tekrar Dene</button>
+      </>}
       {ready && <p>{bank.data.length} soru hazır.</p>}
       {ready && !valid && <p id="count-error">1 ile {bank.data.length} arasında tam sayı gir.</p>}
       <button className="primary" disabled={!valid} onClick={() => { if (valid) onStart(selectedCount); }}>Başla</button>

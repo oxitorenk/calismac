@@ -21,7 +21,7 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
   const [bank, setBank] = useState<ContentState<Question[]>>({ status: 'loading' });
   const requestId = useRef(0);
   function selectExam(examType: ExamType) {
-    if (route.page !== 'course') return;
+    if (route.page !== 'course' && route.page !== 'count') return;
     const id = ++requestId.current;
     setBank({ status: 'loading' });
     setRoute({ ...route, page: 'count', examType });
@@ -51,7 +51,7 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
       {state.status === 'ready' && route.page === 'course' && <CoursePage onSelect={selectExam} />}
       {route.page === 'count' && <>
         <h2>{route.examType === 'midterm' ? 'Vize' : 'Final'}</h2>
-        <QuestionCountPage bank={bank} onStart={() => setRoute({ ...route, page: 'test' })} />
+        <QuestionCountPage bank={bank} onRetry={() => selectExam(route.examType)} onStart={() => setRoute({ ...route, page: 'test' })} />
       </>}
       {state.status === 'ready' && route.page === 'courses' && <CoursesPage
         catalog={state.data}
