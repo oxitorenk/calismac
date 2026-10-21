@@ -1,4 +1,5 @@
 import { normalizeCsv } from './normalizeCsv.ts';
+import type { Question } from '../../domain/models.ts';
 
 const bankHeaders = ['id', 'question', 'image_url', 'option_a', 'option_b', 'option_c', 'option_d', 'option_e', 'answer'];
 
@@ -23,4 +24,16 @@ export function parseQuestionRows(csv: string): string[][] {
     }
   }
   return rows;
+}
+
+export function parseQuestionBank(csv: string): Question[] {
+  return parseQuestionRows(csv).map(([id, text, imageUrl, ...fields]) => ({
+    id,
+    text,
+    ...(imageUrl ? { imageUrl } : {}),
+    options: fields.slice(0, 5).map((text, index) => ({
+      text,
+      correct: fields[5] === 'ABCDE'[index],
+    })),
+  }));
 }

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { parseQuestionRows } from '../src/data/csv/questionBankParser.ts';
+import { parseQuestionBank, parseQuestionRows } from '../src/data/csv/questionBankParser.ts';
 
 const header = 'id,question,image_url,option_a,option_b,option_c,option_d,option_e,answer';
 const row = '2026-guz-ara-05,Soru?,,Bir,İki,Üç,Dört,Beş,C';
@@ -22,4 +22,19 @@ test('optional HTTPS images and lowercase answers are accepted', () => {
   const [parsed] = parseQuestionRows(`${header}\n${imageRow}`);
   assert.equal(parsed[8], 'C');
   assert.ok(parsed[2].startsWith('https://'));
+});
+
+test('each source answer becomes exactly one correct option object', () => {
+  for (const answer of 'ABCDE') {
+    const [question] = parseQuestionBank(`${header}\n${row.replace(',C', `,${answer}`)}`);
+    assert.equal(question.options.length, 5);
+    assert.equal(question.options.filter(option => option.correct).length, 1);
+    const correct = question.options['ABCDE'.indexOf(answer)];
+    assert.equal(correct.correct, true);
+    question.options.reverse();
+    assert.equal(question.options.find(option => option.correct), correct);
+    assert.equal(question.imageUrl, undefined);
+  }
+  const [question] = parseQuestionBank(`${header}\n${row.replace(',,', ',https://res.cloudinary.com/demo/image/upload/a.png,')}`);
+  assert.equal(question.imageUrl, 'https://res.cloudinary.com/demo/image/upload/a.png');
 });
