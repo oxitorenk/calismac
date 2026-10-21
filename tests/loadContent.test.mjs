@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { contentCache } from '../src/data/contentCache.ts';
 import { loadContent } from '../src/data/loadContent.ts';
+import { parseCatalog } from '../src/data/csv/catalogParser.ts';
+import { parseQuestionBank } from '../src/data/csv/questionBankParser.ts';
 
 const parse = csv => {
   if (!csv.startsWith('valid:')) throw new Error('Invalid content');
@@ -36,4 +38,22 @@ test('offline fallback validates cached content; missing or invalid cache reject
   read.mock.mockImplementation(() => null);
   await assert.rejects(loadContent('https://example.com', 'catalog', parse));
   assert.equal(write.mock.callCount(), 0);
+});
+
+test('cached catalog and banks use the real normalization and validation pipeline', async t => {
+  t.mock.method(globalThis, 'fetch', async () => { throw new TypeError('offline'); });
+  const catalog = '\uFEFF department_id ,department,course_id,course,midterm_gid,final_gid\ntasarim,Tasarım,estetik,Estetik,1,2';
+  const bank = 'id,question,image_url,option_a,option_b,option_c,option_d,option_e,answer\n2026-guz-ara-05,"Türkçe,\nçok satır",,A,B,C,D,E, c ';
+  const read = t.mock.method(contentCache, 'read', key => key === 'catalog' ? catalog : bank);
+  const cachedCatalog = await loadContent('https://example.com', 'catalog', parseCatalog);
+  const cachedBank = await loadContent('https://example.com', 'bank', parseQuestionBank);
+  assert.deepEqual(cachedCatalog, parseCatalog(catalog));
+  assert.deepEqual(cachedBank, parseQuestionBank(bank));
+  assert.equal(cachedBank[0].options[2].correct, true);
+  for (const invalid of ['', 'wrong,headers\nx,y', bank.replace(', c ', ',F'), `${bank}\n${bank.substring(bank.indexOf('\n') + 1)}`]) {
+    read.mock.mockImplementation(() => invalid);
+    await assert.rejects(loadContent('https://example.com', 'bank', parseQuestionBank));
+  }
+  read.mock.mockImplementation(() => catalog.replace('tasarim,', 'TASARIM,'));
+  await assert.rejects(loadContent('https://example.com', 'catalog', parseCatalog));
 });
