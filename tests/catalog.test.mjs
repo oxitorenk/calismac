@@ -17,3 +17,15 @@ test('empty, malformed or partially invalid catalog is rejected as a whole', () 
     assert.throws(() => parseCatalog(csv));
   }
 });
+
+test('a logical course may be shared across departments', () => {
+  const shared = row.replace('tasarim,Tasarım', 'sanat,Sanat');
+  assert.equal(parseCatalog(`${header}\n${row}\n${shared}`).length, 2);
+});
+
+test('duplicate pairs and inconsistent names or GIDs are rejected', () => {
+  const shared = row.replace('tasarim,Tasarım', 'sanat,Sanat');
+  for (const conflict of [row, row.replace('gorsel-estetik', 'baska-ders').replace('Tasarım', 'Başka bölüm'), shared.replace('Görsel Estetik', 'Başka ders'), shared.replace('714582708', '1'), shared.replace('1671082491', '2')]) {
+    assert.throws(() => parseCatalog(`${header}\n${row}\n${conflict}`));
+  }
+});
