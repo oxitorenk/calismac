@@ -357,6 +357,30 @@ test('first answer locks all choices and preserves their order', async t => {
   assert.deepEqual(options.map(option => option.children[1].textContent), order);
 });
 
+for (const scenario of [
+  { name: 'reveals a correct answer below the footer', answer: 'Üç', top: 450, height: 100, offset: 58 },
+  { name: 'reveals the correct option after a wrong answer', answer: 'Bir', top: 90, height: 100, offset: -18 },
+  { name: 'keeps a fully visible correct option still', answer: 'Üç', top: 150, height: 100, offset: 0 },
+  { name: 'respects reduced motion', answer: 'Üç', top: 450, height: 100, offset: 58, reduced: true },
+  { name: 'shows the start of an option taller than the viewport', answer: 'Üç', top: 150, height: 500, offset: 42 },
+]) {
+  test(scenario.name, async t => {
+    const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question] });
+    await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
+    const scrolls = [];
+    window.HTMLElement.prototype.scrollBy = function (options) { scrolls.push({ element: this, ...options }); };
+    window.matchMedia = () => ({ matches: !!scenario.reduced });
+    t.mock.method(window.HTMLElement.prototype, 'getBoundingClientRect', function () {
+      return this.classList.contains('question-content')
+        ? { top: 100, bottom: 500, height: 400 }
+        : { top: scenario.top, bottom: scenario.top + scenario.height, height: scenario.height };
+    });
+    await view.click(scenario.answer);
+    assert.deepEqual(scrolls, scenario.offset ? [{ element: document.querySelector('.question-content'), top: scenario.offset, behavior: scenario.reduced ? 'instant' : 'smooth' }] : []);
+    assert.notEqual(document.activeElement, document.querySelector('.correct'));
+  });
+}
+
 test('wrong answer shows chosen and correct options with textual feedback', async t => {
   const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question] });
   await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
