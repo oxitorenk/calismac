@@ -570,5 +570,5 @@ button { transition: background-color 160ms ease-out, color 160ms ease-out; }
 .selection-order { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; flex-shrink: 0; border: 1px solid var(--color-control-border); border-radius: 50%; color: var(--color-accent); font-size: 0.875rem; font-weight: 600; }
 .list-button[aria-pressed="true"] { background: var(--color-surface-active); }
 .study-next { margin-top: 1rem; width: 100%; }
-.study-summary li { display: grid; gap: 0.5rem; padding: 1.25rem; }
-.study-summary span { color: var(--color-text-muted); }
+.study-summary .summary-details { display: grid; gap: 0.5rem; text-align: left; }
+.study-summary .summary-details > span { color: var(--color-text-muted); font-size: 0.875rem; font-weight: 400; }

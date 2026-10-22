@@ -19,6 +19,7 @@ export function StudyPage({ repository, catalog, departmentId, courseIds, onExit
   const [exam, setExam] = useState<ExamType | null>(null);
   const [sessions, setSessions] = useState<TestSession[]>([]);
   const [index, setIndex] = useState(0);
+  const [completed, setCompleted] = useState(false);
   const [page, setPage] = useState<'exam' | 'count' | 'test' | 'results' | 'wrong' | 'summary'>('exam');
   const load = useCallback(async () => {
     if (!exam) return [];
@@ -30,7 +31,7 @@ export function StudyPage({ repository, catalog, departmentId, courseIds, onExit
   }, [repository, departmentId, courseIds, exam]);
   const { state: banks, retry } = useContent(load);
   const session = sessions[index];
-  const busy = sessions.length > 0 && page !== 'summary';
+  const busy = sessions.length > 0 && !completed;
   useEffect(() => { onBusy(busy); return () => onBusy(false); }, [busy, onBusy]);
   const courseName = (id: string) => catalog.find(entry => entry.departmentId === departmentId && entry.courseId === id)?.course ?? id;
   const title = page === 'exam' || page === 'count' ? 'Çalışma oluştur' : page === 'summary' ? 'Çalışma tamamlandı' : courseName(courseIds[index]);
@@ -39,8 +40,8 @@ export function StudyPage({ repository, catalog, departmentId, courseIds, onExit
     : banks;
   return <AppShell page={page} title={title} compact={page === 'test' || page === 'wrong'}
     contextLabel={exam ? `${exam === 'midterm' ? 'Vize' : 'Final'} · ${page === 'count' ? courseIds.length + ' ders' : index + 1 + ' / ' + courseIds.length + ' ders'}` : undefined}
-    backLabel={page === 'count' ? 'Sınav Tipi' : page === 'wrong' ? 'Sonuçlar' : 'Dersler'}
-    onBack={page === 'summary' ? undefined : () => page === 'count' ? (setPage('exam'), setExam(null)) : page === 'wrong' ? setPage('results') : onExit()}>
+    backLabel={page === 'count' ? 'Sınav Tipi' : page === 'wrong' ? 'Sonuçlar' : completed && page === 'results' ? 'Çalışma Özeti' : 'Dersler'}
+    onBack={page === 'summary' ? undefined : () => page === 'count' ? (setPage('exam'), setExam(null)) : page === 'wrong' ? setPage('results') : completed && page === 'results' ? setPage('summary') : onExit()}>
     {page === 'exam' && <CoursePage onSelect={value => { setExam(value); setPage('count'); }} />}
     {page === 'count' && <>
       <p>Her ders için aynı soru sayısı kullanılır. Daha az sorusu olan derslerde mevcut soruların tamamı çözülür.</p>
@@ -58,16 +59,20 @@ export function StudyPage({ repository, catalog, departmentId, courseIds, onExit
         else setSessions(current => current.map((item, i) => i === index ? { ...item, currentQuestionIndex: item.currentQuestionIndex + 1 } : item));
       }} />}
     {page === 'results' && session && <ResultsPage session={session} onReview={() => setPage('wrong')} onCourses={onExit}
-      continueLabel={index + 1 < sessions.length ? `Sıradaki ders: ${courseName(courseIds[index + 1])}` : 'Çalışma sonuçlarını gör'}
+      continueLabel={completed ? 'Çalışma Özeti' : index + 1 < sessions.length ? `Sıradaki ders: ${courseName(courseIds[index + 1])}` : 'Çalışma sonuçlarını gör'}
       onContinue={() => {
-        if (index + 1 < sessions.length) { setIndex(index + 1); setPage('test'); }
-        else setPage('summary');
+        if (completed) setPage('summary');
+        else if (index + 1 < sessions.length) { setIndex(index + 1); setPage('test'); }
+        else { setCompleted(true); setPage('summary'); }
       }} />}
     {page === 'wrong' && session && <WrongAnswersPage session={session} onResults={() => setPage('results')} />}
     {page === 'summary' && <>
-      <ul className="grouped-list study-summary">{sessions.map(item => {
+      <ul className="grouped-list study-summary">{sessions.map((item, itemIndex) => {
         const result = testResults(item);
-        return <li key={item.courseId}><strong>{courseName(item.courseId)}</strong><span>{item.questions.length} soruda {result.correct} doğru · %{Math.round(result.rate * 100)}</span></li>;
+        return <li key={item.courseId}><button className="list-button" onClick={() => { setIndex(itemIndex); setPage('results'); }}>
+          <span className="summary-details"><strong>{courseName(item.courseId)}</strong><span>{item.questions.length} soruda {result.correct} doğru · %{Math.round(result.rate * 100)}</span></span>
+          <svg className="disclosure" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
+        </button></li>;
       })}</ul>
       <button className="primary study-next" onClick={onExit}>Ders Seçimi</button>
     </>}
