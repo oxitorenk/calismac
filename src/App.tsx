@@ -1,4 +1,5 @@
 import { AppShell } from './components/AppShell';
+import { LoadingSkeleton } from './components/LoadingSkeleton';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ContentRepository } from './data/ContentRepository';
 import { GoogleSheetsContentRepository } from './data/GoogleSheetsContentRepository';
@@ -94,7 +95,7 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
       backLabel={route.page === 'courses' ? 'Bölümler' : route.page === 'wrong' ? 'Sonuçlar' : route.page === 'count' ? 'Sınav Tipi' : route.page === 'course' ? 'Dersler' : course}
       onBack={route.page === 'departments' || route.page === 'results' ? undefined : () => navigate(parentRoute(route))}
     >
-      {state.status === 'loading' && <p role="status">Bölümler yükleniyor…</p>}
+      {state.status === 'loading' && <LoadingSkeleton variant="list" label="Bölümler yükleniyor…" />}
       {state.status === 'error' && <>
         <p role="alert">Bölümler yüklenemedi.</p>
         <button className="primary" onClick={retry}>Tekrar Dene</button>

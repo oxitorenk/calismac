@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import type { ContentState } from '../app/useContent';
 import type { Question } from '../domain/models';
 
@@ -33,7 +34,7 @@ export function QuestionCountPage({ bank, onStart, onRetry }: { bank: ContentSta
         <label htmlFor="question-count">Soru Sayısı</label>
         <input id="question-count" type="text" inputMode="numeric" pattern="[0-9]*" value={count} placeholder="—" disabled={!ready} aria-invalid={ready && !valid} aria-describedby={ready && !valid ? 'count-error' : undefined} onInput={event => setCount(event.currentTarget.value)} />
       </div>
-      {bank.status === 'loading' && showLoading && <p role="status">Yükleniyor…</p>}
+      {bank.status === 'loading' && showLoading && <LoadingSkeleton variant="line" label="Sorular yükleniyor…" />}
       {bank.status === 'error' && <>
         <p role="alert">Sorular yüklenemedi.</p>
         <button className="primary" onClick={onRetry}>Tekrar Dene</button>

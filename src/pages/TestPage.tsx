@@ -1,5 +1,6 @@
 import type { TestSession } from '../domain/models';
 import { useEffect, useRef, useState } from 'react';
+import { LoadingSkeleton } from '../components/LoadingSkeleton';
 
 export function TestPage({ session, onAnswer, onNext, review = false }: { session: TestSession; onAnswer?: (optionIndex: number) => void; onNext: () => void; review?: boolean }) {
   const question = session.questions[session.currentQuestionIndex];
@@ -18,9 +19,9 @@ export function TestPage({ session, onAnswer, onNext, review = false }: { sessio
       <p className="progress" id="question-progress"><span className="sr-only">Soru </span>{session.currentQuestionIndex + 1} / {session.questions.length}</p>
       <h2 className="question-text" ref={heading} tabIndex={-1} aria-describedby="question-progress">{question.text}</h2>
       {question.imageUrl && <>
-        <img key={imageAttempt} className="question-image" src={question.imageUrl} alt="Soruya ait görsel"
+        <img key={imageAttempt} className="question-image" hidden={imageStatus !== 'ready'} src={question.imageUrl} alt="Soruya ait görsel"
           onLoad={() => setImageStatus('ready')} onError={() => setImageStatus('error')} />
-        {imageStatus === 'loading' && <p role="status">Görsel yükleniyor…</p>}
+        {imageStatus === 'loading' && <LoadingSkeleton variant="image" label="Görsel yükleniyor…" />}
         {imageStatus === 'error' && <>
           <p role="alert">Soru görseli yüklenemedi. Bağlantını kontrol edip tekrar dene.</p>
           <button className="secondary" onClick={() => {

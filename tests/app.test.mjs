@@ -67,12 +67,47 @@ test('catalog shows loading, error and a successful retry', async t => {
     },
   });
   assert.match(view.text(), /Bölümler yükleniyor/);
+  const skeleton = document.querySelector('.loading-skeleton--list');
+  assert.equal(skeleton.getAttribute('role'), 'status');
+  assert.equal(skeleton.querySelector('.sr-only').textContent, 'Bölümler yükleniyor…');
+  assert.equal(skeleton.querySelector('.skeleton-placeholder').getAttribute('aria-hidden'), 'true');
+  assert.equal(skeleton.querySelectorAll('.skeleton-placeholder > span').length, 3);
   assert.equal(document.querySelectorAll('.list-button').length, 0);
   await act(async () => reject(new Error('offline')));
+  assert.equal(document.querySelector('.loading-skeleton'), null);
   assert.match(view.text(), /Bölümler yüklenemedi/);
   await view.click('Tekrar Dene');
   assert.match(view.text(), /Tasarım/);
   assert.equal(calls, 2);
+});
+
+test('skeleton motion pauses offscreen and in a hidden tab, then cleans up', async t => {
+  let intersect, resolve, disconnected = false;
+  const previous = globalThis.IntersectionObserver;
+  globalThis.IntersectionObserver = class {
+    constructor(callback) { intersect = callback; }
+    observe() {}
+    disconnect() { disconnected = true; }
+  };
+  t.after(() => { if (previous) globalThis.IntersectionObserver = previous; else delete globalThis.IntersectionObserver; });
+  await mount(t, { getCatalog: () => new Promise(done => { resolve = done; }) });
+  const skeleton = document.querySelector('.loading-skeleton');
+  const visibility = hidden => {
+    Object.defineProperty(document, 'hidden', { configurable: true, value: hidden });
+    document.dispatchEvent(new window.Event('visibilitychange'));
+  };
+  visibility(false);
+  assert.equal(skeleton.style.getPropertyValue('--skeleton-play-state'), 'running');
+  intersect([{ isIntersecting: false }]);
+  assert.equal(skeleton.style.getPropertyValue('--skeleton-play-state'), 'paused');
+  intersect([{ isIntersecting: true }]);
+  visibility(true);
+  assert.equal(skeleton.style.getPropertyValue('--skeleton-play-state'), 'paused');
+  visibility(false);
+  assert.equal(skeleton.style.getPropertyValue('--skeleton-play-state'), 'running');
+  await act(async () => resolve(catalog));
+  assert.equal(document.querySelector('.loading-skeleton'), null);
+  assert.equal(disconnected, true);
 });
 
 test('departments are distinct by ID and the entire row navigates', async t => {
@@ -127,12 +162,14 @@ test('bank loading stays on count screen with delayed indicator and disabled con
   const input = document.getElementById('question-count');
   assert.equal(input.disabled, true);
   assert.equal(input.value, '');
-  assert.doesNotMatch(view.text(), /Yükleniyor/);
+  assert.doesNotMatch(view.text(), /Sorular yükleniyor/);
   await act(async () => t.mock.timers.tick(400));
-  assert.match(view.text(), /Yükleniyor/);
+  assert.match(view.text(), /Sorular yükleniyor/);
+  assert.ok(document.querySelector('.loading-skeleton--line'));
   assert.ok([...document.querySelectorAll('section button')].every(button => button.disabled));
   await act(async () => resolve([{}]));
-  assert.doesNotMatch(view.text(), /Yükleniyor/);
+  assert.doesNotMatch(view.text(), /Sorular yükleniyor/);
+  assert.equal(document.querySelector('.loading-skeleton'), null);
   assert.equal(input.disabled, false);
 });
 
@@ -256,10 +293,14 @@ test('question image appears between question text and options', async t => {
   await view.click('Başla');
   const image = document.querySelector('.question-image');
   assert.equal(image.src, imageUrl);
+  assert.equal(image.hidden, true);
+  assert.ok(document.querySelector('.loading-skeleton--image'));
   assert.equal(image.previousElementSibling.className, 'question-text');
   assert.ok(image.compareDocumentPosition(document.querySelector('.options')) & window.Node.DOCUMENT_POSITION_FOLLOWING);
   assert.ok([...document.querySelectorAll('.option')].every(button => button.disabled));
   await act(async () => image.dispatchEvent(new window.Event('load')));
+  assert.equal(image.hidden, false);
+  assert.equal(document.querySelector('.loading-skeleton--image'), null);
   assert.ok([...document.querySelectorAll('.option')].every(button => !button.disabled));
 });
 
@@ -273,12 +314,14 @@ test('failed question images retry without changing answers and reset for the ne
   const order = [...document.querySelectorAll('.option')].map(button => button.textContent);
   const imageEvent = async name => act(async () => document.querySelector('.question-image').dispatchEvent(new window.Event(name)));
   await imageEvent('error');
+  assert.equal(document.querySelector('.loading-skeleton--image'), null);
   assert.match(document.querySelector('[role="alert"]').textContent, /görseli yüklenemedi/);
   await view.click('Bir');
   assert.equal(document.querySelector('.incorrect'), null);
   const failedImage = document.querySelector('.question-image');
   [...document.querySelectorAll('button')].find(button => button.textContent === 'Görseli Tekrar Dene').focus();
   await view.click('Görseli Tekrar Dene');
+  assert.ok(document.querySelector('.loading-skeleton--image'));
   assert.equal(document.activeElement.className, 'question-text');
   assert.notEqual(document.querySelector('.question-image'), failedImage);
   assert.equal(document.querySelector('[role="alert"]'), null);

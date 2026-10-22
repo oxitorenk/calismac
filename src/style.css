@@ -222,6 +222,31 @@ h1[tabindex="-1"]:focus, h2[tabindex="-1"]:focus { outline: none; }
   margin: 1rem auto;
 }
 
+.question-image[hidden] { display: none; }
+
+.loading-skeleton { width: 100%; }
+.skeleton-placeholder { position: relative; background: var(--color-surface); border-radius: 12px; overflow: hidden; animation: skeleton-reveal 160ms 400ms ease-out both; }
+.loading-skeleton--list { margin: 1.5rem 0; }
+.loading-skeleton--list .skeleton-placeholder { border-radius: 16px; overflow: hidden; }
+.loading-skeleton--list .skeleton-placeholder > span { box-sizing: border-box; display: flex; align-items: center; min-height: 68px; margin-left: 1.25rem; }
+.loading-skeleton--list .skeleton-placeholder > span + span { border-top: 1px solid var(--color-separator); }
+.loading-skeleton--list .skeleton-placeholder > span::after { content: ''; width: 60%; height: 1rem; background: var(--color-surface-active); border-radius: 4px; animation: skeleton-breathe 2.2s 400ms ease-in-out infinite; }
+.loading-skeleton--list .skeleton-placeholder > span:nth-child(2)::after { width: 44%; }
+.loading-skeleton--list .skeleton-placeholder > span:nth-child(3)::after { width: 70%; }
+.loading-skeleton--line { margin-top: 1rem; }
+.loading-skeleton--line .skeleton-placeholder { width: min(12rem, 100%); height: 0.75rem; animation-delay: 0ms; }
+.loading-skeleton--image { margin: 1rem 0; }
+/* shortcut: source image dimensions are unknown; use their ratio when metadata becomes available. */
+.loading-skeleton--image .skeleton-placeholder { aspect-ratio: 4 / 3; }
+.loading-skeleton--line .skeleton-placeholder::after,
+.loading-skeleton--image .skeleton-placeholder::after { content: ''; position: absolute; inset: 0; background: var(--color-surface-active); animation: skeleton-breathe 2.2s 400ms ease-in-out infinite; }
+.loading-skeleton--line .skeleton-placeholder::after { animation-delay: 0ms; }
+.loading-skeleton .skeleton-placeholder,
+.loading-skeleton .skeleton-placeholder::after,
+.loading-skeleton .skeleton-placeholder > span::after { animation-play-state: var(--skeleton-play-state, running); }
+@keyframes skeleton-reveal { from { opacity: 0; visibility: hidden; } to { opacity: 1; visibility: visible; } }
+@keyframes skeleton-breathe { 0%, 100% { opacity: 0.65; } 50% { opacity: 1; } }
+
 .options {
   display: grid;
   gap: 0.75rem;
@@ -512,4 +537,7 @@ button { transition: background-color 160ms ease-out, color 160ms ease-out; }
 }
 @media (prefers-reduced-motion: reduce) {
   button { transition: none; }
+  .loading-skeleton .skeleton-placeholder { animation-duration: 1ms; }
+  .loading-skeleton .skeleton-placeholder > span::after,
+  .loading-skeleton .skeleton-placeholder::after { animation: none; }
 }
