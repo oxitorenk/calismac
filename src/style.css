@@ -430,7 +430,25 @@ dialog p { margin: 0.75rem 0 1.5rem; color: var(--color-text-muted); }
   min-height: 0;
   overflow-y: auto;
   scrollbar-color: var(--color-control-border) var(--color-background);
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
   padding: 0.25rem 0.25rem 1rem;
+  padding-right: 0.75rem;
+}
+
+@media (max-width: 47.999rem), (hover: none) and (pointer: coarse) {
+  .question-content { scrollbar-width: none; scrollbar-gutter: auto; padding-right: 0.25rem; scroll-padding-bottom: 32px; }
+  .question-content::-webkit-scrollbar { display: none; }
+  .question-content[data-more-below="true"] {
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent);
+  }
+}
+
+@media (forced-colors: active) {
+  .question-content { scrollbar-width: auto; }
+  .question-content::-webkit-scrollbar { display: block; }
+  .question-content[data-more-below="true"] { -webkit-mask-image: none; mask-image: none; }
 }
 
 .study-session .progress {

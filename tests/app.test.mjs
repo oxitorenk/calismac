@@ -357,11 +357,35 @@ test('first answer locks all choices and preserves their order', async t => {
   assert.deepEqual(options.map(option => option.children[1].textContent), order);
 });
 
+test('mobile continuation hint follows scrolling and viewport or content changes', async t => {
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question] });
+  await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
+  const content = document.querySelector('.question-content');
+  Object.defineProperties(content, {
+    scrollHeight: { configurable: true, value: 1000, writable: true },
+    clientHeight: { configurable: true, value: 400, writable: true },
+    scrollTop: { configurable: true, value: 0, writable: true },
+  });
+  await act(async () => window.dispatchEvent(new window.Event('resize')));
+  assert.equal(content.dataset.moreBelow, 'true');
+  content.scrollTop = 599;
+  await act(async () => content.dispatchEvent(new window.Event('scroll')));
+  assert.equal(content.dataset.moreBelow, 'false');
+  content.clientHeight = 250;
+  await act(async () => window.dispatchEvent(new window.Event('resize')));
+  assert.equal(content.dataset.moreBelow, 'true');
+  content.scrollHeight = 200;
+  content.scrollTop = 0;
+  await act(async () => window.dispatchEvent(new window.Event('resize')));
+  assert.equal(content.dataset.moreBelow, 'false');
+});
+
 for (const scenario of [
   { name: 'reveals a correct answer below the footer', answer: 'Üç', top: 450, height: 100, offset: 58 },
   { name: 'reveals the correct option after a wrong answer', answer: 'Bir', top: 90, height: 100, offset: -18 },
   { name: 'keeps a fully visible correct option still', answer: 'Üç', top: 150, height: 100, offset: 0 },
   { name: 'respects reduced motion', answer: 'Üç', top: 450, height: 100, offset: 58, reduced: true },
+  { name: 'keeps the correct answer above the mobile continuation fade', answer: 'Üç', top: 450, height: 100, offset: 82, inset: 32 },
   { name: 'shows the start of an option taller than the viewport', answer: 'Üç', top: 150, height: 500, offset: 42 },
 ]) {
   test(scenario.name, async t => {
@@ -370,6 +394,7 @@ for (const scenario of [
     const scrolls = [];
     window.HTMLElement.prototype.scrollBy = function (options) { scrolls.push({ element: this, ...options }); };
     window.matchMedia = () => ({ matches: !!scenario.reduced });
+    if (scenario.inset) document.querySelector('.question-content').style.scrollPaddingBottom = `${scenario.inset}px`;
     t.mock.method(window.HTMLElement.prototype, 'getBoundingClientRect', function () {
       return this.classList.contains('question-content')
         ? { top: 100, bottom: 500, height: 400 }

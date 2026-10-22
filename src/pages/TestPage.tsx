@@ -8,16 +8,29 @@ export function TestPage({ session, onAnswer, onNext, review = false }: { sessio
   const correctLabel = 'ABCDE'[question.options.findIndex(option => option.correct)];
   const [imageStatus, setImageStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [imageAttempt, setImageAttempt] = useState(0);
+  const [moreBelow, setMoreBelow] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const correctOption = useRef<HTMLButtonElement>(null);
+  useLayoutEffect(() => {
+    const viewport = content.current;
+    if (!viewport) return;
+    const update = () => setMoreBelow(viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop > 2);
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
+    observer?.observe(viewport);
+    for (const child of viewport.children) observer?.observe(child);
+    viewport.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+    return () => { observer?.disconnect(); viewport.removeEventListener('scroll', update); window.removeEventListener('resize', update); };
+  }, [question.id, selected, imageStatus, imageAttempt]);
   useLayoutEffect(() => {
     if (selected === null || review || !content.current || !correctOption.current) return;
     const viewport = content.current.getBoundingClientRect();
     if (!viewport.height) return;
     const option = correctOption.current.getBoundingClientRect();
     const top = viewport.top + 8;
-    const bottom = viewport.bottom - 8;
+    const bottom = viewport.bottom - (parseFloat(window.getComputedStyle(content.current).scrollPaddingBottom) || 8);
     const offset = option.height > bottom - top || option.top < top ? option.top - top : Math.max(0, option.bottom - bottom);
     if (offset) content.current.scrollBy({ top: offset, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
   }, [selected, review, question.id, imageStatus]);
@@ -27,7 +40,7 @@ export function TestPage({ session, onAnswer, onNext, review = false }: { sessio
   return (
     <section className="study-session" aria-label={review ? 'Yanlışlar' : 'Test'}>
       <progress className="session-progress" value={session.currentQuestionIndex + 1} max={session.questions.length} aria-label="Test ilerlemesi" />
-      <div ref={content} className="question-content" role="region" tabIndex={0} aria-label="Soru ve cevap seçenekleri">
+      <div ref={content} className="question-content" data-more-below={moreBelow} role="region" tabIndex={0} aria-label="Soru ve cevap seçenekleri">
       <p className="progress" id="question-progress"><span className="sr-only">Soru </span>{session.currentQuestionIndex + 1} / {session.questions.length}</p>
       <h2 className="question-text" ref={heading} tabIndex={-1} aria-describedby="question-progress">{question.text}</h2>
       {question.imageUrl && <>
