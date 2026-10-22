@@ -384,7 +384,8 @@ test('mobile continuation hint follows scrolling and viewport or content changes
 
 for (const scenario of [
   { name: 'reveals a correct answer below the footer', answer: 'Üç', top: 450, height: 100, offset: 58 },
-  { name: 'reveals the correct option after a wrong answer', answer: 'Bir', top: 90, height: 100, offset: -18 },
+  { name: 'waits for a request before revealing a wrong answer', answer: 'Bir', top: 90, height: 100, offset: -18, manual: true },
+  { name: 'omits reveal action when the correct answer is visible', answer: 'Bir', top: 150, height: 100, offset: 0, manual: true },
   { name: 'keeps a fully visible correct option still', answer: 'Üç', top: 150, height: 100, offset: 0 },
   { name: 'respects reduced motion', answer: 'Üç', top: 450, height: 100, offset: 58, reduced: true },
   { name: 'keeps the correct answer above the mobile continuation fade', answer: 'Üç', top: 450, height: 100, offset: 82, inset: 32 },
@@ -403,6 +404,16 @@ for (const scenario of [
         : { top: scenario.top, bottom: scenario.top + scenario.height, height: scenario.height };
     });
     await view.click(scenario.answer);
+    if (scenario.manual) {
+      assert.deepEqual(scrolls, []);
+      assert.equal(Array.from(document.querySelectorAll('button')).some(button => button.textContent === 'Doğru cevabı gör ↓'), !!scenario.offset);
+      if (scenario.offset) {
+        await view.click('Doğru cevabı gör ↓');
+        t.mock.method(document.querySelector('.correct'), 'getBoundingClientRect', () => ({ top: 150, bottom: 250, height: 100 }));
+        await act(async () => document.querySelector('.question-content').dispatchEvent(new window.Event('scroll')));
+        assert.equal(Array.from(document.querySelectorAll('button')).some(button => button.textContent === 'Doğru cevabı gör ↓'), false);
+      }
+    }
     assert.deepEqual(scrolls, scenario.offset ? [{ element: document.querySelector('.question-content'), top: scenario.offset, behavior: scenario.reduced ? 'instant' : 'smooth' }] : []);
     assert.notEqual(document.activeElement, document.querySelector('.correct'));
   });

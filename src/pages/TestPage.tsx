@@ -9,13 +9,21 @@ export function TestPage({ session, onAnswer, onNext, review = false }: { sessio
   const [imageStatus, setImageStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [imageAttempt, setImageAttempt] = useState(0);
   const [moreBelow, setMoreBelow] = useState(false);
+  const [correctVisible, setCorrectVisible] = useState(true);
+  const wrong = selected !== null && !question.options[selected].correct;
   const heading = useRef<HTMLHeadingElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const correctOption = useRef<HTMLButtonElement>(null);
   useLayoutEffect(() => {
     const viewport = content.current;
     if (!viewport) return;
-    const update = () => setMoreBelow(viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop > 2);
+    const update = () => {
+      setMoreBelow(viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop > 2);
+      const bounds = viewport.getBoundingClientRect();
+      const option = correctOption.current?.getBoundingClientRect();
+      const inset = parseFloat(window.getComputedStyle(viewport).scrollPaddingBottom) || 8;
+      setCorrectVisible(!option || !bounds.height || (option.top >= bounds.top + 6 && option.bottom <= bounds.bottom - inset + 2));
+    };
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
     observer?.observe(viewport);
     for (const child of viewport.children) observer?.observe(child);
@@ -24,8 +32,8 @@ export function TestPage({ session, onAnswer, onNext, review = false }: { sessio
     update();
     return () => { observer?.disconnect(); viewport.removeEventListener('scroll', update); window.removeEventListener('resize', update); };
   }, [question.id, selected, imageStatus, imageAttempt]);
-  useLayoutEffect(() => {
-    if (selected === null || review || !content.current || !correctOption.current) return;
+  function revealCorrect() {
+    if (!content.current || !correctOption.current) return;
     const viewport = content.current.getBoundingClientRect();
     if (!viewport.height) return;
     const option = correctOption.current.getBoundingClientRect();
@@ -33,6 +41,9 @@ export function TestPage({ session, onAnswer, onNext, review = false }: { sessio
     const bottom = viewport.bottom - (parseFloat(window.getComputedStyle(content.current).scrollPaddingBottom) || 8);
     const offset = option.height > bottom - top || option.top < top ? option.top - top : Math.max(0, option.bottom - bottom);
     if (offset) content.current.scrollBy({ top: offset, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+  }
+  useLayoutEffect(() => {
+    if (selected !== null && !wrong && !review) revealCorrect();
   }, [selected, review, question.id, imageStatus]);
   useEffect(() => {
     heading.current?.focus({ preventScroll: true });
@@ -74,6 +85,7 @@ export function TestPage({ session, onAnswer, onNext, review = false }: { sessio
       </div>
       {selected !== null && <div className="study-actions">
       <p role="status">{question.options[selected].correct ? 'Doğru!' : `Yanlış · Doğru cevap ${correctLabel}`}</p>
+      {wrong && !review && !correctVisible && <button className="secondary" onClick={revealCorrect}>Doğru cevabı gör ↓</button>}
       <button className="primary" onClick={onNext}>
         {session.currentQuestionIndex === session.questions.length - 1 ? review ? 'Sonuçlara Dön' : 'Sonuçları Gör' : review ? 'Sonraki' : 'Sonraki Soru'}
       </button>
