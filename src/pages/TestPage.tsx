@@ -60,14 +60,20 @@ export function TestPage({ session, onAnswer, onNext, review = false }: { sessio
         {question.options.map((option, index) => (
           <button ref={option.correct ? correctOption : undefined} className={`option${selected !== null && option.correct ? ' correct' : selected === index ? ' incorrect' : ''}`} key={index} disabled={review || selected !== null || (!!question.imageUrl && imageStatus !== 'ready')} aria-pressed={selected === index} onClick={() => onAnswer?.(index)}>
             <span className="option-letter">{'ABCDE'[index]}</span> <span>{option.text}</span>
-            {selected !== null && option.correct && <span className="feedback">✓ Doğru{selected === index ? ' — Cevabın' : ''}</span>}
-            {selected === index && !option.correct && <span className="feedback">✕ Yanlış — Cevabın</span>}
+            <span className="feedback">
+              {selected !== null && (option.correct || selected === index) && <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d={option.correct ? 'm5 12 4 4L19 6' : 'm6 6 12 12M18 6 6 18'} />
+                </svg>
+                {selected === index ? <>Cevabın<span className="sr-only">{option.correct ? ' — Doğru' : ' — Yanlış'}</span></> : 'Doğru'}
+              </>}
+            </span>
           </button>
         ))}
       </div>
       </div>
       {selected !== null && <div className="study-actions">
-      <p role="status">{question.options[selected].correct ? 'Doğru cevap!' : `Yanlış cevap. Doğru cevap: ${correctLabel} seçeneği.`}</p>
+      <p role="status">{question.options[selected].correct ? 'Doğru!' : `Yanlış · Doğru cevap ${correctLabel}`}</p>
       <button className="primary" onClick={onNext}>
         {session.currentQuestionIndex === session.questions.length - 1 ? review ? 'Sonuçlara Dön' : 'Sonuçları Gör' : review ? 'Sonraki' : 'Sonraki Soru'}
       </button>

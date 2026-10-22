@@ -277,6 +277,8 @@ test('test screen renders selected session question and relabeled shuffled optio
   assert.equal(document.querySelector('.question-content').getAttribute('tabindex'), '0');
   assert.equal(document.querySelector('.question-content').getAttribute('role'), 'region');
   assert.equal(document.querySelector('.study-actions'), null);
+  assert.equal(document.querySelectorAll('.option .feedback').length, 5);
+  assert.ok([...document.querySelectorAll('.option .feedback')].every(label => label.textContent.trim() === ''));
   const options = [...document.querySelectorAll('.option')];
   assert.equal(options.length, 5);
   assert.deepEqual(options.map(option => option.firstElementChild.textContent), ['A', 'B', 'C', 'D', 'E']);
@@ -415,9 +417,12 @@ test('wrong answer shows chosen and correct options with textual feedback', asyn
   assert.equal(document.querySelector('.study-actions').previousElementSibling.className, 'question-content');
   assert.equal(document.querySelector('.study-actions .primary').textContent, 'Sonuçları Gör');
   assert.match(document.querySelector('.correct').textContent, /Üç.*Doğru/s);
-  assert.match(document.querySelector('[role="status"]').textContent, /Yanlış cevap/);
+  assert.equal(document.querySelector('.correct .feedback').textContent.trim(), 'Doğru');
+  assert.equal(document.querySelector('.incorrect .feedback').textContent.trim(), 'Cevabın — Yanlış');
+  assert.equal(document.querySelectorAll('.feedback svg[aria-hidden="true"]').length, 2);
+  assert.match(document.querySelector('[role="status"]').textContent, /Yanlış/);
   const correctLabel = document.querySelector('.correct').firstElementChild.textContent[0];
-  assert.equal(document.querySelector('.study-actions [role="status"]').textContent, `Yanlış cevap. Doğru cevap: ${correctLabel} seçeneği.`);
+  assert.equal(document.querySelector('.study-actions [role="status"]').textContent, `Yanlış · Doğru cevap ${correctLabel}`);
 });
 
 test('next question requires an answer, preserves order and ends at results', async t => {

@@ -288,8 +288,11 @@ h1[tabindex="-1"]:focus, h2[tabindex="-1"]:focus { outline: none; }
 }
 
 .feedback {
-  margin-left: auto;
-  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+  line-height: 1.25;
   font-weight: 600;
 }
 
@@ -482,8 +485,12 @@ dialog p { margin: 0.75rem 0 1.5rem; color: var(--color-text-muted); }
 
 .study-session .feedback {
   grid-column: 2;
-  margin-left: 0;
+  justify-self: end;
+  grid-row: 2;
+  margin-top: 0.5rem;
 }
+
+.study-session .feedback:empty { display: none; }
 
 @media (hover: hover) and (pointer: fine) {
   .list-button:not(:disabled):hover,
@@ -538,7 +545,7 @@ dialog p { margin: 0.75rem 0 1.5rem; color: var(--color-text-muted); }
 .study-shell h1 { font-size: 1.0625rem; }
 .study-session .progress { text-align: left; margin-bottom: 1.25rem; }
 .study-session .question-text { font-size: 1.25rem; font-weight: 500; line-height: 1.65; }
-.study-session .option { align-items: start; gap: 1rem; padding: 1rem; }
+.study-session .option { align-items: start; gap: 0 1rem; padding: 1rem; }
 .option-letter { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 8px; background: var(--color-surface-active); color: var(--color-text-muted); font-size: 0.8125rem; font-weight: 600; }
 .correct .option-letter, .incorrect .option-letter { background: transparent; color: inherit; }
 .study-actions { padding-top: 1rem; }
