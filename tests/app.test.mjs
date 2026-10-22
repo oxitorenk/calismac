@@ -655,3 +655,65 @@ test('complete flow shares a course across departments while keeping exam banks 
   }
   assert.deepEqual(requests, [['tasarim', 'estetik', 'midterm'], ['sanat', 'estetik', 'midterm'], ['sanat', 'estetik', 'final']]);
 });
+
+
+test('study solves selected courses in selection order and summarizes all results', async t => {
+  const requests = [];
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async (department, course, exam) => {
+    requests.push([department, course, exam]);
+    return [question];
+  } });
+  await view.click('Tasarım'); await view.click('Çalışma oluştur');
+  const proceed = () => Array.from(document.querySelectorAll('button')).find(button => button.textContent.includes('dersle devam'));
+  assert.equal(proceed().disabled, true);
+  await view.click('Fotoğraf'); await view.click('Estetik');
+  assert.deepEqual(Array.from(document.querySelectorAll('.list-button[aria-pressed="true"] .selection-order')).map(el => el.textContent), ['2', '1']);
+  await view.click('2 dersle devam'); await view.click('Final'); await view.click('Başla');
+  assert.deepEqual(requests, [['tasarim', 'fotograf', 'final'], ['tasarim', 'estetik', 'final']]);
+  assert.equal(document.querySelector('h1').textContent, 'Fotoğraf');
+  await view.click('Bir'); await view.click('Sonuçları Gör'); await view.click('Yanlışları İncele');
+  await view.click('Sonuçlara Dön');
+  await view.click('Sıradaki ders: Estetik');
+  assert.equal(document.querySelector('h1').textContent, 'Estetik');
+  await view.click('Üç'); await view.click('Sonuçları Gör'); await view.click('Çalışma sonuçlarını gör');
+  assert.equal(document.querySelectorAll('.study-summary li').length, 2);
+  assert.match(document.querySelector('.study-summary').textContent, /Fotoğraf.*0 doğru.*Estetik.*1 doğru/);
+  await view.click('Ders Seçimi');
+  assert.equal(document.querySelector('dialog'), null);
+  assert.equal(document.querySelector('h1').textContent, 'Tasarım');
+});
+
+test('study retries bank errors and confirms leaving a running study', async t => {
+  let calls = 0;
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => {
+    if (++calls === 1) throw new Error('offline');
+    return [question];
+  } });
+  await view.click('Tasarım'); await view.click('Çalışma oluştur'); await view.click('Estetik');
+  await view.click('1 dersle devam'); await view.click('Vize');
+  assert.match(view.text(), /Sorular yüklenemedi/);
+  await view.click('Tekrar Dene'); await view.click('Başla');
+  await act(async () => document.querySelector('.back').click());
+  assert.ok(document.querySelector('dialog'));
+  await view.click('Devam Et'); assert.ok(document.querySelector('.option'));
+  await act(async () => document.querySelector('.back').click());
+  await view.click('Testten Çık');
+  assert.equal(document.querySelector('h1').textContent, 'Tasarım');
+});
+
+
+for (const all of [false, true]) test(`study ${all ? 'all' : 'custom'} count applies independently to each course`, async t => {
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async (_department, course) =>
+    Array.from({ length: course === 'estetik' ? 3 : 1 }, (_, i) => ({ ...question, id: String(i) })) });
+  await view.click('Tasarım'); await view.click('Çalışma oluştur'); await view.click('Estetik'); await view.click('Fotoğraf');
+  await view.click('2 dersle devam'); await view.click('Vize');
+  if (all) await view.click('Tümü'); else await view.enterCount('2');
+  await view.click('Başla');
+  const count = all ? 3 : 2;
+  assert.match(document.querySelector('#question-progress').textContent, new RegExp(`1 / ${count}`));
+  for (let i = 0; i < count; i++) {
+    await view.click('Üç'); await view.click(i === count - 1 ? 'Sonuçları Gör' : 'Sonraki Soru');
+  }
+  await view.click('Sıradaki ders: Fotoğraf');
+  assert.match(document.querySelector('#question-progress').textContent, /1 \/ 1/);
+});

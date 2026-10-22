@@ -3,7 +3,7 @@ import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import type { ContentState } from '../app/useContent';
 import type { Question } from '../domain/models';
 
-export function QuestionCountPage({ bank, onStart, onRetry }: { bank: ContentState<Question[]>; onStart: (count: number) => void; onRetry: () => void }) {
+export function QuestionCountPage({ bank, onStart, onRetry }: { bank: ContentState<Question[]>; onStart: (count: number, all: boolean) => void; onRetry: () => void }) {
   const [showLoading, setShowLoading] = useState(false);
   const [count, setCount] = useState('');
   const [custom, setCustom] = useState(false);
@@ -40,7 +40,7 @@ export function QuestionCountPage({ bank, onStart, onRetry }: { bank: ContentSta
         <button className="primary" onClick={onRetry}>Tekrar Dene</button>
       </>}
       {ready && !valid && <p id="count-error" role="alert">1 ile {bank.data.length} arasında tam sayı gir.</p>}
-      <button className="primary" disabled={!valid} onClick={() => { if (valid) onStart(selectedCount); }}>Başla</button>
+      <button className="primary" disabled={!valid} onClick={() => { if (valid) onStart(selectedCount, !custom && selectedCount === bank.data.length); }}>Başla</button>
     </section>
   );
 }

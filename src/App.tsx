@@ -1,3 +1,4 @@
+import { StudyPage } from './pages/StudyPage';
 import { AppShell } from './components/AppShell';
 import { LoadingSkeleton } from './components/LoadingSkeleton';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -29,8 +30,9 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
   const requestId = useRef(0);
   const [session, setSession] = useState<TestSession | null>(null);
   const [pendingRoute, setPendingRoute] = useState<Route | null>(null);
-  const incomplete = route.page === 'test' && session?.answers.some(answer => answer === null);
-  const activeTest = route.page === 'test' && session !== null;
+  const [studyBusy, setStudyBusy] = useState(false);
+  const incomplete = studyBusy || route.page === 'test' && session?.answers.some(answer => answer === null);
+  const activeTest = studyBusy || (route.page === 'test' && session !== null);
   function commitNavigation(target: Route, replace = false) {
     if (!['test', 'results', 'wrong'].includes(target.page)) setSession(null);
     if (target.page === 'count') loadBank(target);
@@ -86,6 +88,13 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
   const course = state.status === 'ready' && 'courseId' in route
     ? state.data.find(entry => entry.courseId === route.courseId)?.course
     : undefined;
+  if (route.page === 'study' && state.status === 'ready') return <>
+    <StudyPage repository={repository} catalog={state.data} departmentId={route.departmentId} courseIds={route.courseIds}
+      onBusy={setStudyBusy} onExit={() => navigate({ page: 'courses', departmentId: route.departmentId })} />
+    {pendingRoute && <ExitConfirmation onContinue={() => setPendingRoute(null)} onExit={() => {
+      setStudyBusy(false); commitNavigation(pendingRoute, true); setPendingRoute(null);
+    }} />}
+  </>;
   return (
     <AppShell
       page={route.page}
@@ -128,6 +137,7 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
       {state.status === 'ready' && route.page === 'courses' && <CoursesPage
         catalog={state.data}
         departmentId={route.departmentId}
+        onStudy={courseIds => navigate({ page: 'study', departmentId: route.departmentId, courseIds })}
         onSelect={courseId => navigate({ page: 'course', departmentId: route.departmentId, courseId })}
       />}
       {pendingRoute && <ExitConfirmation onContinue={() => setPendingRoute(null)} onExit={() => {

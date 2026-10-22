@@ -1,7 +1,7 @@
 import type { TestSession } from '../domain/models';
 import { testResults } from '../domain/testResults';
 
-export function ResultsPage({ session, onReview, onCourses }: { session: TestSession; onReview: () => void; onCourses: () => void }) {
+export function ResultsPage({ session, onReview, onCourses, onContinue, continueLabel }: { session: TestSession; onReview: () => void; onCourses: () => void; onContinue?: () => void; continueLabel?: string }) {
   const { correct, wrong, rate } = testResults(session);
   return (
     <section className="test-results" aria-label="Test sonucu">
@@ -13,8 +13,9 @@ export function ResultsPage({ session, onReview, onCourses }: { session: TestSes
         <div><dt>Yanlış</dt><dd>{wrong}</dd></div>
       </dl>
       <div className="result-actions">
-        {wrong > 0 && <button className="primary" onClick={onReview}>Yanlışları İncele</button>}
-        <button className={wrong > 0 ? 'secondary' : 'primary'} onClick={onCourses}>Ders Seçimi</button>
+        {onContinue && <button className="primary" onClick={onContinue}>{continueLabel}</button>}
+        {wrong > 0 && <button className={onContinue ? 'secondary' : 'primary'} onClick={onReview}>Yanlışları İncele</button>}
+        <button className={wrong > 0 || onContinue ? 'secondary' : 'primary'} onClick={onCourses}>Ders Seçimi</button>
       </div>
     </section>
   );
