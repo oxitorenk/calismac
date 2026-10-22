@@ -122,7 +122,7 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
       />}
       {route.page === 'results' && session && <ResultsPage session={session}
         onReview={() => navigate({ ...route, page: 'wrong' })}
-        onHome={() => navigate({ page: 'departments' })}
+        onCourses={() => navigate({ page: 'courses', departmentId: route.departmentId })}
       />}
       {route.page === 'wrong' && session && <WrongAnswersPage session={session} onResults={() => navigate({ ...route, page: 'results' })} />}
       {state.status === 'ready' && route.page === 'courses' && <CoursesPage

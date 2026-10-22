@@ -474,7 +474,7 @@ test('active-test exit confirmation preserves progress or discards the test', as
 test('exiting toward an older session route discards the current incomplete test', async t => {
   const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question] });
   await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
-  await view.click('Üç'); await view.click('Sonuçları Gör'); await view.click('Ana Sayfa');
+  await view.click('Üç'); await view.click('Sonuçları Gör'); await view.click('Ders Seçimi'); await view.click('Bölümler');
   await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
   for (const page of ['results', 'test', 'wrong']) {
     await act(async () => window.dispatchEvent(new window.PopStateEvent('popstate', { state: { calismacRoute: { page, departmentId: 'tasarim', courseId: 'estetik', examType: 'midterm' } } })));
@@ -493,7 +493,7 @@ test('exiting toward an older session route discards the current incomplete test
   assert.equal(window.history.state.calismacRoute.page, 'count');
 });
 
-test('all-correct results hide review and home returns to departments without confirmation', async t => {
+test('all-correct results return to courses in the same department without confirmation', async t => {
   const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question] });
   await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
   await view.click('Üç'); await view.click('Sonuçları Gör');
@@ -503,8 +503,10 @@ test('all-correct results hide review and home returns to departments without co
   assert.equal(document.querySelector('.result-summary').textContent, '1 soruda 1 doğru.');
   assert.match(document.querySelector('.study-context').textContent, /Vize.*Estetik/);
   assert.doesNotMatch(view.text(), /Yanlışları İncele/);
-  await view.click('Ana Sayfa');
-  assert.equal(document.querySelector('h1').textContent, 'Bölümler');
+  await view.click('Ders Seçimi');
+  assert.equal(document.querySelector('h1').textContent, 'Tasarım');
+  assert.equal(window.history.state.calismacRoute.page, 'courses');
+  assert.equal(window.history.state.calismacRoute.departmentId, 'tasarim');
   assert.equal(document.querySelector('dialog'), null);
 });
 
@@ -534,7 +536,7 @@ test('wrong-answer review keeps original choices, cannot change score and return
 test('new tests discard previous answers and history cannot restore a discarded session', async t => {
   const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question] });
   await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
-  await view.click('Bir'); await view.click('Sonuçları Gör'); await view.click('Ana Sayfa');
+  await view.click('Bir'); await view.click('Sonuçları Gör'); await view.click('Ders Seçimi'); await view.click('Bölümler');
   await act(async () => window.dispatchEvent(new window.PopStateEvent('popstate', { state: { calismacRoute: { page: 'results', departmentId: 'tasarim', courseId: 'estetik', examType: 'midterm' } } })));
   assert.equal(document.querySelector('h1').textContent, 'Bölümler');
   await view.click('Tasarım'); await view.click('Estetik'); await view.click('Final'); await view.click('Başla');
@@ -649,7 +651,7 @@ test('complete flow shares a course across departments while keeping exam banks 
     assert.match(view.text(), /%0/);
     await view.click('Yanlışları İncele');
     assert.equal(document.querySelector('.question-text').textContent, text);
-    await view.click('Sonuçlara Dön'); await view.click('Ana Sayfa');
+    await view.click('Sonuçlara Dön'); await view.click('Ders Seçimi'); await view.click('Bölümler');
   }
   assert.deepEqual(requests, [['tasarim', 'estetik', 'midterm'], ['sanat', 'estetik', 'midterm'], ['sanat', 'estetik', 'final']]);
 });
