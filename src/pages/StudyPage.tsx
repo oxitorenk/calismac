@@ -45,7 +45,7 @@ export function StudyPage({ repository, catalog, departmentId, courseIds: initia
     : banks, [banks, courseIds.length]);
   function editCourses(from: 'exam' | 'count') { setReturnPage(from); setPage('edit'); }
   return <AppShell page={page} title={title} compact={page === 'test' || page === 'wrong'}
-    contextLabel={exam ? `${exam === 'midterm' ? 'Vize' : 'Final'} · ${page === 'summary' ? courseIds.length + ' ders tamamlandı' : page === 'count' || page === 'exam' || page === 'edit' ? courseIds.length + ' ders' : index + 1 + ' / ' + courseIds.length + ' ders'}` : undefined}
+    contextLabel={exam && page !== 'edit' ? `${exam === 'midterm' ? 'Vize' : 'Final'} · ${page === 'summary' ? courseIds.length + ' ders tamamlandı' : page === 'count' || page === 'exam' ? courseIds.length + ' ders' : index + 1 + ' / ' + courseIds.length + ' ders'}` : undefined}
     backLabel={page === 'edit' ? 'Ayarlara dön' : page === 'count' ? 'Sınav Tipi' : page === 'wrong' ? 'Sonuçlar' : completed && page === 'results' ? 'Çalışma Özeti' : 'Dersler'}
     onBack={page === 'summary' ? undefined : () => page === 'edit' ? setPage(returnPage) : page === 'exam' ? editCourses('exam') : page === 'count' ? setPage('exam') : page === 'wrong' ? setPage('results') : completed && page === 'results' ? setPage('summary') : onExit()}>
     {page === 'edit' && <CoursesPage catalog={catalog} departmentId={departmentId} initialSelected={courseIds}

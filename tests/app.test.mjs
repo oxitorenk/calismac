@@ -758,7 +758,11 @@ for (const mode of ['custom', 'all', 'preset']) test(`study editing preserves ${
   else await view.click('20');
   await view.click('Dersleri düzenle');
   assert.deepEqual(Array.from(document.querySelectorAll('.selection-order')).map(el => el.textContent), ['1', '2']);
+  assert.equal(document.querySelector('.study-context'), null);
+  assert.equal(document.querySelector('.list-button[aria-pressed="true"]').getAttribute('aria-label'), 'Estetik, çözüm sırası 1');
+  assert.equal(document.querySelector('[role="status"]').textContent, '2 ders seçildi.');
   await view.click('Estetik');
+  assert.equal(document.querySelector('[role="status"]').textContent, '1 ders seçildi.');
   await view.click('Devam et');
   assert.match(document.querySelector('.study-context').textContent, /Final/);
   assert.deepEqual(Array.from(document.querySelectorAll('.study-itinerary li')).map(el => el.textContent), ['Fotoğraf']);
