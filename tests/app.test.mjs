@@ -711,7 +711,8 @@ test('study retries bank errors and confirms leaving a running study', async t =
   assert.ok(document.querySelector('dialog'));
   await view.click('Devam Et'); assert.ok(document.querySelector('.option'));
   await act(async () => document.querySelector('.back').click());
-  await view.click('Testten Çık');
+  assert.match(document.querySelector('dialog').textContent, /tüm ilerlemen ve tamamladığın derslerin sonuçları kaybolacak/);
+  await view.click('Çalışmadan Çık');
   assert.equal(document.querySelector('h1').textContent, 'Tasarım');
 });
 
@@ -722,6 +723,14 @@ for (const all of [false, true]) test(`study ${all ? 'all' : 'custom'} count app
   await view.click('Tasarım'); await view.click('Çalışma oluştur'); await view.click('Estetik'); await view.click('Fotoğraf');
   await view.click('2 dersle devam'); await view.click('Vize');
   if (all) await view.click('Tümü'); else await view.enterCount('2');
+  assert.equal(document.querySelector('#count-title').textContent, 'Her dersten kaç soru?');
+  assert.deepEqual(Array.from(document.querySelectorAll('.workload-preview dd')).map(el => el.textContent), [all ? '3 soru' : '2 soru', '1 soru']);
+  assert.equal(document.querySelector('.workload-total').textContent, `Toplam ${all ? 4 : 3} soru · 2 ders`);
+  if (!all) {
+    await view.enterCount('0');
+    assert.equal(document.querySelector('.workload-preview'), null);
+    await view.enterCount('2');
+  }
   await view.click('Başla');
   const count = all ? 3 : 2;
   assert.match(document.querySelector('#question-progress').textContent, new RegExp(`1 / ${count}`));

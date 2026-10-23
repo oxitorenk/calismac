@@ -91,7 +91,7 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
   if (route.page === 'study' && state.status === 'ready') return <>
     <StudyPage repository={repository} catalog={state.data} departmentId={route.departmentId} courseIds={route.courseIds}
       onBusy={setStudyBusy} onExit={() => navigate({ page: 'courses', departmentId: route.departmentId })} />
-    {pendingRoute && <ExitConfirmation onContinue={() => setPendingRoute(null)} onExit={() => {
+    {pendingRoute && <ExitConfirmation study onContinue={() => setPendingRoute(null)} onExit={() => {
       setStudyBusy(false); commitNavigation(pendingRoute, true); setPendingRoute(null);
     }} />}
   </>;

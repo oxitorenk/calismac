@@ -3,13 +3,16 @@ import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import type { ContentState } from '../app/useContent';
 import type { Question } from '../domain/models';
 
-export function QuestionCountPage({ bank, onStart, onRetry }: { bank: ContentState<Question[]>; onStart: (count: number, all: boolean) => void; onRetry: () => void }) {
+export function QuestionCountPage({ bank, onStart, onRetry, courses }: { bank: ContentState<Question[]>; onStart: (count: number, all: boolean) => void; onRetry: () => void; courses?: { name: string; available: number }[] }) {
   const [showLoading, setShowLoading] = useState(false);
   const [count, setCount] = useState('');
   const [custom, setCustom] = useState(false);
   const ready = bank.status === 'ready';
   const selectedCount = Number(count);
   const valid = ready && /^\d+$/.test(count) && Number.isSafeInteger(selectedCount) && selectedCount >= 1 && selectedCount <= bank.data.length;
+  const all = !custom && ready && selectedCount === bank.data.length;
+  const counts = valid && courses ? courses.map(course => ({ ...course, count: all ? course.available : Math.min(selectedCount, course.available) })) : [];
+  const total = counts.reduce((sum, course) => sum + course.count, 0);
   useEffect(() => {
     setCount(bank.status === 'ready' ? String(Math.min(20, bank.data.length)) : '');
     setCustom(false);
@@ -22,7 +25,8 @@ export function QuestionCountPage({ bank, onStart, onRetry }: { bank: ContentSta
   }, [bank]);
   return (
     <section className="test-setup" aria-busy={bank.status === 'loading'}>
-      <h2 id="count-title">Kaç soru çözmek istersin?</h2>
+      <h2 id="count-title">{courses ? 'Her dersten kaç soru?' : 'Kaç soru çözmek istersin?'}</h2>
+      {courses && <p className="count-help">Daha az sorusu olan derslerde mevcut soruların tamamı kullanılır.</p>}
       <div className="count-presets" role="group" aria-labelledby="count-title">
         {[10, 20].map(amount => (
           <button key={amount} disabled={!ready || amount > bank.data.length} aria-pressed={!custom && ready && selectedCount === amount && selectedCount !== bank.data.length} onClick={() => { setCustom(false); setCount(String(amount)); }}>{amount}</button>
@@ -40,7 +44,11 @@ export function QuestionCountPage({ bank, onStart, onRetry }: { bank: ContentSta
         <button className="primary" onClick={onRetry}>Tekrar Dene</button>
       </>}
       {ready && !valid && <p id="count-error" role="alert">1 ile {bank.data.length} arasında tam sayı gir.</p>}
-      <button className="primary" disabled={!valid} onClick={() => { if (valid) onStart(selectedCount, !custom && selectedCount === bank.data.length); }}>Başla</button>
+      {courses && valid && <>
+        <dl className="workload-preview" aria-label="Ders başına soru sayısı">{counts.map((course, index) => <div key={index}><dt>{course.name}</dt><dd>{course.count} soru</dd></div>)}</dl>
+        <p className="workload-total" role="status">Toplam {total} soru · {courses.length} ders</p>
+      </>}
+      <button className="primary" disabled={!valid} onClick={() => { if (valid) onStart(selectedCount, all); }}>Başla</button>
     </section>
   );
 }

@@ -39,13 +39,12 @@ export function StudyPage({ repository, catalog, departmentId, courseIds, onExit
     ? { status: 'ready' as const, data: banks.data.reduce((largest, bank) => bank.length > largest.length ? bank : largest, banks.data[0] ?? []) }
     : banks;
   return <AppShell page={page} title={title} compact={page === 'test' || page === 'wrong'}
-    contextLabel={exam ? `${exam === 'midterm' ? 'Vize' : 'Final'} · ${page === 'count' ? courseIds.length + ' ders' : index + 1 + ' / ' + courseIds.length + ' ders'}` : undefined}
+    contextLabel={exam ? `${exam === 'midterm' ? 'Vize' : 'Final'} · ${page === 'summary' ? courseIds.length + ' ders tamamlandı' : page === 'count' ? courseIds.length + ' ders' : index + 1 + ' / ' + courseIds.length + ' ders'}` : undefined}
     backLabel={page === 'count' ? 'Sınav Tipi' : page === 'wrong' ? 'Sonuçlar' : completed && page === 'results' ? 'Çalışma Özeti' : 'Dersler'}
     onBack={page === 'summary' ? undefined : () => page === 'count' ? (setPage('exam'), setExam(null)) : page === 'wrong' ? setPage('results') : completed && page === 'results' ? setPage('summary') : onExit()}>
     {page === 'exam' && <CoursePage onSelect={value => { setExam(value); setPage('count'); }} />}
     {page === 'count' && <>
-      <p>Her ders için aynı soru sayısı kullanılır. Daha az sorusu olan derslerde mevcut soruların tamamı çözülür.</p>
-      <QuestionCountPage bank={countBank} onRetry={retry} onStart={(count, all) => {
+      <QuestionCountPage bank={countBank} courses={courseIds.map((id, i) => ({ name: courseName(id), available: banks.status === 'ready' ? banks.data[i]?.length ?? 0 : 0 }))} onRetry={retry} onStart={(count, all) => {
         if (banks.status !== 'ready' || !exam) return;
         setSessions(banks.data.map((bank, i) => createTestSession(bank, all ? bank.length : Math.min(count, bank.length), departmentId, courseIds[i], exam)));
         setPage('test');

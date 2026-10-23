@@ -572,3 +572,10 @@ button { transition: background-color 160ms ease-out, color 160ms ease-out; }
 .study-next { margin-top: 1rem; width: 100%; }
 .study-summary .summary-details { display: grid; gap: 0.5rem; text-align: left; }
 .study-summary .summary-details > span { color: var(--color-text-muted); font-size: 0.875rem; font-weight: 400; }
+
+.test-setup .count-help { margin: -0.5rem 0 1.25rem; color: var(--color-text-muted); font-size: 0.875rem; }
+.workload-preview { width: 100%; margin: 1.5rem 0 0; font-size: 0.875rem; }
+.workload-preview > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1rem; padding-block: 0.5rem; }
+.workload-preview dt { color: var(--color-text-muted); overflow-wrap: anywhere; }
+.workload-preview dd { margin: 0; font-variant-numeric: tabular-nums; }
+.workload-total { margin: 0.75rem 0 0; font-weight: 600; }
