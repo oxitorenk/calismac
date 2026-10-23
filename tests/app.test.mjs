@@ -740,3 +740,51 @@ for (const all of [false, true]) test(`study ${all ? 'all' : 'custom'} count app
   await view.click('Sıradaki ders: Fotoğraf');
   assert.match(document.querySelector('#question-progress').textContent, /1 \/ 1/);
 });
+
+
+for (const mode of ['custom', 'all', 'preset']) test(`study editing preserves ${mode} count and exam while recalculating workload`, async t => {
+  const requests = [];
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async (_department, course, exam) => {
+    requests.push([course, exam]);
+    return Array.from({ length: course === 'estetik' ? 24 : 3 }, (_, i) => ({ ...question, id: String(i) }));
+  } });
+  await view.click('Tasarım'); await view.click('Çalışma oluştur'); await view.click('Estetik'); await view.click('Fotoğraf');
+  await view.click('2 dersle devam');
+  assert.deepEqual(Array.from(document.querySelectorAll('.study-itinerary li')).map(el => el.textContent), ['Estetik', 'Fotoğraf']);
+  await view.click('Final');
+  assert.equal(document.querySelector('.workload-total').textContent, 'Toplam 23 soru · 2 ders');
+  if (mode === 'all') await view.click('Tümü');
+  else if (mode === 'custom') await view.enterCount('12');
+  else await view.click('20');
+  await view.click('Dersleri düzenle');
+  assert.deepEqual(Array.from(document.querySelectorAll('.selection-order')).map(el => el.textContent), ['1', '2']);
+  await view.click('Estetik');
+  await view.click('Devam et');
+  assert.match(document.querySelector('.study-context').textContent, /Final/);
+  assert.deepEqual(Array.from(document.querySelectorAll('.study-itinerary li')).map(el => el.textContent), ['Fotoğraf']);
+  assert.equal(document.querySelector('.workload-total').textContent, 'Toplam 3 soru · 1 ders');
+  if (mode === 'custom') assert.equal(document.getElementById('question-count').value, '12');
+  else assert.equal(Array.from(document.querySelectorAll('.count-presets button')).find(el => el.textContent === (mode === 'all' ? 'Tümü' : '20')).getAttribute('aria-pressed'), 'true');
+  await view.click('Dersleri düzenle'); await view.click('Estetik'); await view.click('Devam et');
+  assert.deepEqual(Array.from(document.querySelectorAll('.study-itinerary li')).map(el => el.textContent), ['Fotoğraf', 'Estetik']);
+  assert.equal(document.querySelector('.workload-total').textContent, `Toplam ${mode === 'all' ? 27 : mode === 'custom' ? 15 : 23} soru · 2 ders`);
+  assert.ok(requests.every(([, exam]) => exam === 'final'));
+  await view.click('Başla');
+  assert.equal(document.querySelector('h1').textContent, 'Fotoğraf');
+  assert.match(document.querySelector('#question-progress').textContent, /1 \/ 3/);
+});
+
+test('study setup back and canceled course edits preserve the committed selection', async t => {
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question] });
+  await view.click('Tasarım'); await view.click('Çalışma oluştur'); await view.click('Estetik');
+  await view.click('1 dersle devam');
+  await act(async () => document.querySelector('.back').click());
+  await view.click('Estetik');
+  assert.equal(Array.from(document.querySelectorAll('button')).find(el => el.textContent === 'Devam et').disabled, true);
+  await view.click('Fotoğraf'); await view.click('Vazgeç');
+  assert.deepEqual(Array.from(document.querySelectorAll('.study-itinerary li')).map(el => el.textContent), ['Estetik']);
+  await view.click('Vize'); await view.enterCount('1');
+  await act(async () => document.querySelector('.back').click());
+  await view.click('Vize');
+  assert.equal(document.getElementById('question-count').value, '1');
+});

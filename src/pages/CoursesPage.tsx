@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import type { CatalogEntry } from '../domain/models';
 
-export function CoursesPage({ catalog, departmentId, onSelect, onStudy }: { catalog: CatalogEntry[]; departmentId: string; onSelect: (courseId: string) => void; onStudy: (courseIds: string[]) => void }) {
-  const [selecting, setSelecting] = useState(false);
-  const [selected, setSelected] = useState<string[]>([]);
+export function CoursesPage({ catalog, departmentId, onSelect, onStudy, initialSelected, onCancel }: { catalog: CatalogEntry[]; departmentId: string; onSelect: (courseId: string) => void; onStudy: (courseIds: string[]) => void; initialSelected?: string[]; onCancel?: () => void }) {
+  const [selecting, setSelecting] = useState(!!initialSelected);
+  const [selected, setSelected] = useState<string[]>(initialSelected ?? []);
   return (
     <>
     <ul className="grouped-list">
@@ -16,8 +16,8 @@ export function CoursesPage({ catalog, departmentId, onSelect, onStudy }: { cata
     <div className="result-actions">
       {selecting ? <>
         <p>Dersleri çözmek istediğin sırayla seç.</p>
-        <button className="primary" disabled={!selected.length} onClick={() => onStudy(selected)}>{selected.length} dersle devam et →</button>
-        <button className="secondary" onClick={() => { setSelecting(false); setSelected([]); }}>Vazgeç</button>
+        <button className="primary" disabled={!selected.length} onClick={() => onStudy(selected)}>{initialSelected ? 'Devam et' : `${selected.length} dersle devam et →`}</button>
+        <button className="secondary" onClick={() => { if (onCancel) onCancel(); else { setSelecting(false); setSelected([]); } }}>Vazgeç</button>
       </> : <button className="secondary" onClick={() => setSelecting(true)}>Çalışma oluştur</button>}
     </div>
     </>

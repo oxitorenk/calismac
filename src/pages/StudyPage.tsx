@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ContentRepository } from '../data/ContentRepository';
 import type { CatalogEntry, ExamType, TestSession } from '../domain/models';
 import { useContent } from '../app/useContent';
@@ -7,20 +7,25 @@ import { answerQuestion } from '../domain/answerQuestion';
 import { testResults } from '../domain/testResults';
 import { AppShell } from '../components/AppShell';
 import { CoursePage } from './CoursePage';
+import type { CountSelection } from './QuestionCountPage';
+import { CoursesPage } from './CoursesPage';
 import { QuestionCountPage } from './QuestionCountPage';
 import { TestPage } from './TestPage';
 import { ResultsPage } from './ResultsPage';
 import { WrongAnswersPage } from './WrongAnswersPage';
 
-export function StudyPage({ repository, catalog, departmentId, courseIds, onExit, onBusy }: {
+export function StudyPage({ repository, catalog, departmentId, courseIds: initialCourseIds, onExit, onBusy }: {
   repository: ContentRepository; catalog: CatalogEntry[]; departmentId: string; courseIds: string[];
   onExit: () => void; onBusy: (busy: boolean) => void;
 }) {
+  const [courseIds, setCourseIds] = useState(initialCourseIds);
+  const [selection, setSelection] = useState<CountSelection | null>(null);
+  const [returnPage, setReturnPage] = useState<'exam' | 'count'>('exam');
   const [exam, setExam] = useState<ExamType | null>(null);
   const [sessions, setSessions] = useState<TestSession[]>([]);
   const [index, setIndex] = useState(0);
   const [completed, setCompleted] = useState(false);
-  const [page, setPage] = useState<'exam' | 'count' | 'test' | 'results' | 'wrong' | 'summary'>('exam');
+  const [page, setPage] = useState<'edit' | 'exam' | 'count' | 'test' | 'results' | 'wrong' | 'summary'>('exam');
   const load = useCallback(async () => {
     if (!exam) return [];
     return Promise.all(courseIds.map(async courseId => {
@@ -34,17 +39,24 @@ export function StudyPage({ repository, catalog, departmentId, courseIds, onExit
   const busy = sessions.length > 0 && !completed;
   useEffect(() => { onBusy(busy); return () => onBusy(false); }, [busy, onBusy]);
   const courseName = (id: string) => catalog.find(entry => entry.departmentId === departmentId && entry.courseId === id)?.course ?? id;
-  const title = page === 'exam' || page === 'count' ? 'Çalışma oluştur' : page === 'summary' ? 'Çalışma tamamlandı' : courseName(courseIds[index]);
-  const countBank = banks.status === 'ready'
-    ? { status: 'ready' as const, data: banks.data.reduce((largest, bank) => bank.length > largest.length ? bank : largest, banks.data[0] ?? []) }
-    : banks;
+  const title = page === 'edit' ? 'Dersleri düzenle' : page === 'exam' || page === 'count' ? 'Çalışma oluştur' : page === 'summary' ? 'Çalışma tamamlandı' : courseName(courseIds[index]);
+  const countBank = useMemo(() => banks.status === 'ready'
+    ? banks.data.length !== courseIds.length ? { status: 'loading' as const } : { status: 'ready' as const, data: banks.data.reduce((largest, bank) => bank.length > largest.length ? bank : largest, banks.data[0] ?? []) }
+    : banks, [banks, courseIds.length]);
+  function editCourses(from: 'exam' | 'count') { setReturnPage(from); setPage('edit'); }
   return <AppShell page={page} title={title} compact={page === 'test' || page === 'wrong'}
-    contextLabel={exam ? `${exam === 'midterm' ? 'Vize' : 'Final'} · ${page === 'summary' ? courseIds.length + ' ders tamamlandı' : page === 'count' ? courseIds.length + ' ders' : index + 1 + ' / ' + courseIds.length + ' ders'}` : undefined}
-    backLabel={page === 'count' ? 'Sınav Tipi' : page === 'wrong' ? 'Sonuçlar' : completed && page === 'results' ? 'Çalışma Özeti' : 'Dersler'}
-    onBack={page === 'summary' ? undefined : () => page === 'count' ? (setPage('exam'), setExam(null)) : page === 'wrong' ? setPage('results') : completed && page === 'results' ? setPage('summary') : onExit()}>
+    contextLabel={exam ? `${exam === 'midterm' ? 'Vize' : 'Final'} · ${page === 'summary' ? courseIds.length + ' ders tamamlandı' : page === 'count' || page === 'exam' || page === 'edit' ? courseIds.length + ' ders' : index + 1 + ' / ' + courseIds.length + ' ders'}` : undefined}
+    backLabel={page === 'edit' ? 'Ayarlara dön' : page === 'count' ? 'Sınav Tipi' : page === 'wrong' ? 'Sonuçlar' : completed && page === 'results' ? 'Çalışma Özeti' : 'Dersler'}
+    onBack={page === 'summary' ? undefined : () => page === 'edit' ? setPage(returnPage) : page === 'exam' ? editCourses('exam') : page === 'count' ? setPage('exam') : page === 'wrong' ? setPage('results') : completed && page === 'results' ? setPage('summary') : onExit()}>
+    {page === 'edit' && <CoursesPage catalog={catalog} departmentId={departmentId} initialSelected={courseIds}
+      onSelect={() => {}} onCancel={() => setPage(returnPage)} onStudy={ids => { setCourseIds(ids); setPage(returnPage); }} />}
+    {(page === 'exam' || page === 'count') && <section className="study-itinerary" aria-label="Seçilen dersler">
+      <div className="itinerary-heading"><h2>Ders sırası</h2><button className="back" onClick={() => editCourses(page)}>Dersleri düzenle</button></div>
+      <ol>{courseIds.map(id => <li key={id}>{courseName(id)}</li>)}</ol>
+    </section>}
     {page === 'exam' && <CoursePage onSelect={value => { setExam(value); setPage('count'); }} />}
     {page === 'count' && <>
-      <QuestionCountPage bank={countBank} courses={courseIds.map((id, i) => ({ name: courseName(id), available: banks.status === 'ready' ? banks.data[i]?.length ?? 0 : 0 }))} onRetry={retry} onStart={(count, all) => {
+      <QuestionCountPage bank={countBank} selection={selection} onSelectionChange={setSelection} courses={courseIds.map((id, i) => ({ name: courseName(id), available: banks.status === 'ready' ? banks.data[i]?.length ?? 0 : 0 }))} onRetry={retry} onStart={(count, all) => {
         if (banks.status !== 'ready' || !exam) return;
         setSessions(banks.data.map((bank, i) => createTestSession(bank, all ? bank.length : Math.min(count, bank.length), departmentId, courseIds[i], exam)));
         setPage('test');

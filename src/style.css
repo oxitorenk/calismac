@@ -579,3 +579,10 @@ button { transition: background-color 160ms ease-out, color 160ms ease-out; }
 .workload-preview dt { color: var(--color-text-muted); overflow-wrap: anywhere; }
 .workload-preview dd { margin: 0; font-variant-numeric: tabular-nums; }
 .workload-total { margin: 0.75rem 0 0; font-weight: 600; }
+
+.study-itinerary { margin-block: 1rem 1.5rem; }
+.itinerary-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.25rem 1rem; }
+.itinerary-heading h2 { margin: 0; font-size: 1rem; font-weight: 600; }
+.itinerary-heading .back { margin: 0; font-size: 0.875rem; }
+.study-itinerary ol { margin: 0.5rem 0 0; padding-left: 1.5rem; color: var(--color-text-muted); font-size: 0.875rem; line-height: 1.6; }
+.study-itinerary li { padding-block: 0.125rem; overflow-wrap: anywhere; }
