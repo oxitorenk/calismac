@@ -9,7 +9,7 @@ export default defineConfig({
     apply: 'build',
     enforce: 'post',
     generateBundle(_options, bundle) {
-      const publicFiles = ['manifest.webmanifest', 'icons/favicon-32.png', 'icons/favicon.ico', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
+      const publicFiles = ['manifest.webmanifest', 'icons/favicon-32.png', 'icons/favicon.ico', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png'];
       const template = readFileSync(new URL('./src/pwa/service-worker.js', import.meta.url), 'utf8');
       const hash = createHash('sha256').update(template);
       for (const file of Object.values(bundle)) hash.update(file.type === 'chunk' ? file.code : file.source);
