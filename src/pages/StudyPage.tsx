@@ -81,7 +81,7 @@ export function StudyPage({ repository, catalog, departmentId, courseIds: initia
       <ul className="grouped-list study-summary">{sessions.map((item, itemIndex) => {
         const result = testResults(item);
         return <li key={item.courseId}><button className="list-button" onClick={() => { setIndex(itemIndex); setPage('results'); }}>
-          <span className="summary-details"><strong>{courseName(item.courseId)}</strong><span>{item.questions.length} soruda {result.correct} doğru · %{Math.round(result.rate * 100)}</span></span>
+          <span className="summary-details"><strong>{courseName(item.courseId)}</strong><span>{item.questions.length} soruda {result.correct} doğru · {result.net.toLocaleString('tr-TR')} net · {result.score.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} puan</span></span>
           <svg className="disclosure" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
         </button></li>;
       })}</ul>

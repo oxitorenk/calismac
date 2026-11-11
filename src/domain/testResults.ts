@@ -10,5 +10,7 @@ export function testResults(session: TestSession) {
   const total = session.questions.length;
   const wrong = wrongQuestionIndexes.length;
   const correct = total - wrong;
-  return { total, correct, wrong, rate: correct / total, wrongQuestionIndexes };
+  const net = correct - wrong / 4;
+  const score = Math.max(0, net * 100 / total);
+  return { total, correct, wrong, net, score, wrongQuestionIndexes };
 }

@@ -42,7 +42,7 @@ test('only the first valid answer is recorded and question order stays fixed', (
   assert.equal(answerQuestion(answered, 1), answered);
 });
 
-test('results use correct divided by total for all-correct, wrong and mixed answers', () => {
+test('results apply AOF wrong-answer penalty and clamp negative scores', () => {
   const base = createTestSession(bank, 3, 'a', 'b', 'final');
   assert.throws(() => testResults(base), /incomplete/);
   for (const wrong of [0, 1, 3]) {
@@ -50,7 +50,20 @@ test('results use correct divided by total for all-correct, wrong and mixed answ
     const result = testResults(session);
     assert.equal(result.correct, 3 - wrong);
     assert.equal(result.wrong, wrong);
-    assert.equal(result.rate, (3 - wrong) / 3);
+    assert.equal(result.net, 3 - wrong - wrong / 4);
+    assert.equal(result.score, Math.max(0, (3 - wrong - wrong / 4) * 100 / 3));
     assert.deepEqual(result.wrongQuestionIndexes, Array.from({ length: wrong }, (_, index) => index));
+  }
+});
+
+
+test('four wrong answers cancel one correct answer and scoring uses the actual question count', () => {
+  for (const [total, wrong, net, score] of [[20, 4, 15, 75], [5, 4, 0, 0], [2, 1, 0.75, 37.5], [1, 0, 1, 100], [1, 1, -0.25, 0]]) {
+    const questions = Array.from({ length: total }, () => bank[0]);
+    const session = createTestSession(questions, total, 'a', 'b', 'midterm');
+    session.answers = session.questions.map((question, index) => question.options.findIndex(option => option.correct === (index >= wrong)));
+    const result = testResults(session);
+    assert.equal(result.net, net);
+    assert.equal(result.score, score);
   }
 });
