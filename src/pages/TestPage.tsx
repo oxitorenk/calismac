@@ -85,7 +85,7 @@ export function TestPage({ session, onAnswer, onNext, review = false }: { sessio
       </div>
       {selected === null && !review && <div className="study-actions">
         <button className="secondary" onClick={() => onAnswer?.('blank')} aria-describedby="reveal-description">Cevabı gör</button>
-        <p id="reveal-description">Bu soru boş sayılacak.</p>
+        <p id="reveal-description">Cevabı görürsen bu soru boş sayılır.</p>
       </div>}
       {selected !== null && <div className="study-actions">
       <p role="status">{selected === 'blank' ? `Boş bırakıldı · Doğru cevap ${correctLabel}` : question.options[selected].correct ? 'Doğru!' : `Yanlış · Doğru cevap ${correctLabel}`}</p>

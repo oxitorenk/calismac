@@ -478,6 +478,12 @@ dialog p { margin: 0.75rem 0 1.5rem; color: var(--color-text-muted); }
   font-size: 0.875rem;
 }
 
+.study-actions #reveal-description {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
 .study-session .option {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
