@@ -1,10 +1,12 @@
-const publishedUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9Fvo0UaWQDSsYANf93d7uimiEjEkEf0ozYu5GKSxb8e16FkRP_nZYjzRcOvSptwv7gbpVl6rb5rIX/pub';
+import { readSheetsConfig } from './sheetsConfig.ts';
 
-export const catalogGid = '0';
+// Node content checks and tests use process.env; Vite supplies import.meta.env.
+const config = readSheetsConfig(import.meta.env ?? process.env);
+export const catalogGid = config.catalogGid;
 
 export function getCsvUrl(gid: string): string {
   if (!/^\d+$/.test(gid)) throw new Error('Invalid sheet GID');
-  const url = new URL(publishedUrl);
+  const url = new URL(config.publishedUrl);
   url.searchParams.set('output', 'csv');
   url.searchParams.set('gid', gid);
   url.searchParams.set('single', 'true');

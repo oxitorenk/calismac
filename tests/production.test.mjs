@@ -7,6 +7,8 @@ test('Pages build references valid scoped assets and precaches the entire shell'
   const result = await build({ logLevel: 'silent', build: { write: false } });
   const output = result.output;
   const files = new Map(output.map(file => [file.fileName, file.type === 'asset' ? String(file.source) : file.code]));
+  const clientCode = [...files].filter(([name]) => name.endsWith('.js') && name !== 'sw.js').map(([, code]) => code).join('\n');
+  assert.ok(clientCode.includes(process.env.VITE_SHEETS_PUBLISHED_URL));
   const html = files.get('index.html');
   const sw = files.get('sw.js');
   assert.ok(html && sw);

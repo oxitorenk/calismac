@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { parseCatalog } from '../src/data/csv/catalogParser.ts';
 import { parseQuestionBank } from '../src/data/csv/questionBankParser.ts';
-import { catalogGid, getCsvUrl } from '../src/data/sheetsSource.ts';
+import { loadEnv } from 'vite';
+
+Object.assign(process.env, loadEnv('production', process.cwd(), 'VITE_'));
+const { catalogGid, getCsvUrl } = await import('../src/data/sheetsSource.ts');
 
 async function readCsv(gid) {
   const response = await fetch(getCsvUrl(gid), { cache: 'no-store', signal: AbortSignal.timeout(10000) });
