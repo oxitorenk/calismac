@@ -52,6 +52,7 @@ test('results apply AOF wrong-answer penalty and clamp negative scores', () => {
     assert.equal(result.wrong, wrong);
     assert.equal(result.net, 3 - wrong - wrong / 4);
     assert.equal(result.score, Math.max(0, (3 - wrong - wrong / 4) * 100 / 3));
+    assert.deepEqual(result.reviewQuestionIndexes, result.wrongQuestionIndexes);
     assert.deepEqual(result.wrongQuestionIndexes, Array.from({ length: wrong }, (_, index) => index));
   }
 });
@@ -66,4 +67,26 @@ test('four wrong answers cancel one correct answer and scoring uses the actual q
     assert.equal(result.net, net);
     assert.equal(result.score, score);
   }
+});
+
+
+test('revealed answers are immutable blanks, not wrong answers or unfinished questions', () => {
+  const initial = createTestSession(bank, 3, 'a', 'b', 'final');
+  const revealed = answerQuestion(initial, 'blank');
+  assert.equal(initial.answers[0], null);
+  assert.equal(revealed.answers[0], 'blank');
+  assert.equal(answerQuestion(revealed, 0), revealed);
+  assert.equal(answerQuestion(revealed, 'blank'), revealed);
+  assert.throws(() => testResults(revealed), /incomplete/);
+  const completed = { ...revealed, answers: ['blank', 'blank', 'blank'] };
+  const result = testResults(completed);
+  assert.equal(result.blank, 3);
+  assert.equal(result.correct, 0);
+  assert.equal(result.wrong, 0);
+  assert.equal(result.score, 0);
+  assert.deepEqual(result.wrongQuestionIndexes, []);
+  assert.deepEqual(result.reviewQuestionIndexes, [0, 1, 2]);
+  const answered = answerQuestion(initial, 0);
+  assert.equal(answerQuestion(answered, 'blank'), answered);
+  assert.throws(() => testResults({ ...initial, answers: ['invalid', 'blank', 'blank'] }), /incomplete/);
 });

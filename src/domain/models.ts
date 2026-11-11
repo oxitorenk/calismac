@@ -27,5 +27,5 @@ export interface TestSession {
   examType: ExamType;
   questions: Question[];
   currentQuestionIndex: number;
-  answers: (number | null)[];
+  answers: (number | 'blank' | null)[];
 }

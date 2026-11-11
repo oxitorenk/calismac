@@ -2,7 +2,7 @@ import type { TestSession } from '../domain/models';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 
-export function TestPage({ session, onAnswer, onNext, review = false }: { session: TestSession; onAnswer?: (optionIndex: number) => void; onNext: () => void; review?: boolean }) {
+export function TestPage({ session, onAnswer, onNext, review = false }: { session: TestSession; onAnswer?: (optionIndex: number | 'blank') => void; onNext: () => void; review?: boolean }) {
   const question = session.questions[session.currentQuestionIndex];
   const selected = session.answers[session.currentQuestionIndex];
   const correctLabel = 'ABCDE'[question.options.findIndex(option => option.correct)];
@@ -10,7 +10,7 @@ export function TestPage({ session, onAnswer, onNext, review = false }: { sessio
   const [imageAttempt, setImageAttempt] = useState(0);
   const [moreBelow, setMoreBelow] = useState(false);
   const [correctVisible, setCorrectVisible] = useState(true);
-  const wrong = selected !== null && !question.options[selected].correct;
+  const wrong = typeof selected === 'number' && !question.options[selected].correct;
   const heading = useRef<HTMLHeadingElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const correctOption = useRef<HTMLButtonElement>(null);
@@ -49,7 +49,7 @@ export function TestPage({ session, onAnswer, onNext, review = false }: { sessio
     heading.current?.focus({ preventScroll: true });
   }, [question.id]);
   return (
-    <section className="study-session" aria-label={review ? 'Yanlışlar' : 'Test'}>
+    <section className="study-session" aria-label={review ? 'Gözden geçirme' : 'Test'}>
       <progress className="session-progress" value={session.currentQuestionIndex + 1} max={session.questions.length} aria-label="Test ilerlemesi" />
       <div ref={content} className="question-content" data-more-below={moreBelow} role="region" tabIndex={0} aria-label="Soru ve cevap seçenekleri">
       <p className="progress" id="question-progress"><span className="sr-only">Soru </span>{session.currentQuestionIndex + 1} / {session.questions.length}</p>
@@ -83,8 +83,12 @@ export function TestPage({ session, onAnswer, onNext, review = false }: { sessio
         ))}
       </div>
       </div>
+      {selected === null && !review && <div className="study-actions">
+        <button className="secondary" onClick={() => onAnswer?.('blank')} aria-describedby="reveal-description">Cevabı gör</button>
+        <p id="reveal-description">Bu soru boş sayılacak.</p>
+      </div>}
       {selected !== null && <div className="study-actions">
-      <p role="status">{question.options[selected].correct ? 'Doğru!' : `Yanlış · Doğru cevap ${correctLabel}`}</p>
+      <p role="status">{selected === 'blank' ? `Boş bırakıldı · Doğru cevap ${correctLabel}` : question.options[selected].correct ? 'Doğru!' : `Yanlış · Doğru cevap ${correctLabel}`}</p>
       {wrong && !review && !correctVisible && <button className="secondary" onClick={revealCorrect}>Doğru cevabı gör ↓</button>}
       <button className="primary" onClick={onNext}>
         {session.currentQuestionIndex === session.questions.length - 1 ? review ? 'Sonuçlara Dön' : 'Sonuçları Gör' : review ? 'Sonraki' : 'Sonraki Soru'}

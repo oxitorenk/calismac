@@ -340,7 +340,7 @@ dialog p { margin: 0.75rem 0 1.5rem; color: var(--color-text-muted); }
   padding: 1rem 0;
   border-block: 1px solid var(--color-separator);
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -553,7 +553,7 @@ dialog p { margin: 0.75rem 0 1.5rem; color: var(--color-text-muted); }
 .score { font-size: clamp(3.5rem, 12vw, 5rem); font-weight: 500; color: var(--color-accent); }
 .result-counts { padding-block: 1.5rem; }
 .result-counts > div:first-child dd { color: var(--color-correct-text); }
-.result-counts > div:last-child dd { color: var(--color-incorrect-text); }
+.result-counts > div:nth-child(2) dd { color: var(--color-incorrect-text); }
 button { transition: background-color 160ms ease-out, color 160ms ease-out; }
 @media (min-width: 48rem) {
   .selection-shell { padding-top: 4rem; }

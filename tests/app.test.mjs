@@ -276,7 +276,8 @@ test('test screen renders selected session question and relabeled shuffled optio
   assert.equal(document.querySelector('.study-context').textContent, 'Vize');
   assert.equal(document.querySelector('.question-content').getAttribute('tabindex'), '0');
   assert.equal(document.querySelector('.question-content').getAttribute('role'), 'region');
-  assert.equal(document.querySelector('.study-actions'), null);
+  assert.equal(document.querySelector('.study-actions .primary'), null);
+  assert.equal(document.querySelector('.study-actions button').textContent, 'Cevabı gör');
   assert.equal(document.querySelectorAll('.option .feedback').length, 5);
   assert.ok([...document.querySelectorAll('.option .feedback')].every(label => label.textContent.trim() === ''));
   const options = [...document.querySelectorAll('.option')];
@@ -338,7 +339,7 @@ test('failed question images retry without changing answers and reset for the ne
   await view.click('Sonraki Soru');
   assert.ok([...document.querySelectorAll('.option')].every(button => button.disabled));
   await imageEvent('load'); await view.click('Bir'); await view.click('Sonuçları Gör');
-  await view.click('Yanlışları İncele');
+  await view.click('Gözden geçir');
   await imageEvent('error'); await view.click('Görseli Tekrar Dene'); await imageEvent('load');
   assert.ok([...document.querySelectorAll('.option')].every(button => button.disabled));
   await view.click('Sonraki');
@@ -498,11 +499,11 @@ test('all-correct results return to courses in the same department without confi
   await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
   await view.click('Üç'); await view.click('Sonuçları Gör');
   assert.match(view.text(), /100 puan/);
-  assert.deepEqual([...document.querySelectorAll('.result-counts dt')].map(item => item.textContent), ['Doğru', 'Yanlış']);
-  assert.deepEqual([...document.querySelectorAll('.result-counts dd')].map(item => item.textContent), ['1', '0']);
+  assert.deepEqual([...document.querySelectorAll('.result-counts dt')].map(item => item.textContent), ['Doğru', 'Yanlış', 'Boş']);
+  assert.deepEqual([...document.querySelectorAll('.result-counts dd')].map(item => item.textContent), ['1', '0', '0']);
   assert.equal(document.querySelector('.result-summary').textContent, '1 soruda 1 doğru · 1 net.');
   assert.match(document.querySelector('.study-context').textContent, /Vize.*Estetik/);
-  assert.doesNotMatch(view.text(), /Yanlışları İncele/);
+  assert.doesNotMatch(view.text(), /Gözden geçir/);
   await view.click('Ders Seçimi');
   assert.equal(document.querySelector('h1').textContent, 'Tasarım');
   assert.equal(window.history.state.calismacRoute.page, 'courses');
@@ -519,8 +520,8 @@ test('wrong-answer review keeps original choices, cannot change score and return
   await view.click('Sonraki Soru'); await view.click('Üç'); await view.click('Sonuçları Gör');
   assert.match(view.text(), /37,5 puan/);
   assert.equal(document.querySelector('.score').getAttribute('aria-label'), '100 üzerinden 37,5 puan');
-  assert.equal(document.querySelector('.result-actions .primary').textContent, 'Yanlışları İncele');
-  await view.click('Yanlışları İncele');
+  assert.equal(document.querySelector('.result-actions .primary').textContent, 'Gözden geçir');
+  await view.click('Gözden geçir');
   assert.match(view.text(), /1 \/ 1/);
   assert.equal(document.activeElement, document.querySelector('.question-text'));
   assert.ok(document.querySelector('main.study-shell .study-actions'));
@@ -590,7 +591,7 @@ test('multiple incorrect answers are reviewed once each without reshuffling', as
   await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
   const calls = random.mock.callCount();
   await view.click('Bir'); await view.click('Sonraki Soru'); await view.click('İki'); await view.click('Sonuçları Gör');
-  await view.click('Yanlışları İncele');
+  await view.click('Gözden geçir');
   assert.match(view.text(), /1 \/ 2/);
   await view.click('Sonraki');
   assert.match(view.text(), /2 \/ 2/);
@@ -649,7 +650,7 @@ test('complete flow shares a course across departments while keeping exam banks 
     assert.equal(document.querySelector('.question-text').textContent, text);
     await view.click('Bir'); await view.click('Sonuçları Gör');
     assert.match(view.text(), /0 puan/);
-    await view.click('Yanlışları İncele');
+    await view.click('Gözden geçir');
     assert.equal(document.querySelector('.question-text').textContent, text);
     await view.click('Sonuçlara Dön'); await view.click('Ders Seçimi'); await view.click('Bölümler');
   }
@@ -671,7 +672,7 @@ test('study solves selected courses in selection order and summarizes all result
   await view.click('2 dersle devam'); await view.click('Final'); await view.click('Başla');
   assert.deepEqual(requests, [['tasarim', 'fotograf', 'final'], ['tasarim', 'estetik', 'final']]);
   assert.equal(document.querySelector('h1').textContent, 'Fotoğraf');
-  await view.click('Bir'); await view.click('Sonuçları Gör'); await view.click('Yanlışları İncele');
+  await view.click('Bir'); await view.click('Sonuçları Gör'); await view.click('Gözden geçir');
   await view.click('Sonuçlara Dön');
   await view.click('Sıradaki ders: Estetik');
   assert.equal(document.querySelector('h1').textContent, 'Estetik');
@@ -682,14 +683,14 @@ test('study solves selected courses in selection order and summarizes all result
   assert.equal(document.querySelector('h1').textContent, 'Fotoğraf');
   assert.match(view.text(), /0 puan/);
   assert.doesNotMatch(view.text(), /Sıradaki ders/);
-  await view.click('Yanlışları İncele');
+  await view.click('Gözden geçir');
   assert.equal(document.querySelectorAll('.option[disabled]').length, 5);
   await view.click('Sonuçlara Dön');
   await act(async () => document.querySelector('.result-actions .primary').click());
   assert.equal(document.querySelectorAll('.study-summary li').length, 2);
   await view.click('Estetik');
   assert.match(view.text(), /100 puan/);
-  assert.doesNotMatch(view.text(), /Yanlışları İncele|Sıradaki ders/);
+  assert.doesNotMatch(view.text(), /Gözden geçir|Sıradaki ders/);
   await act(async () => document.querySelector('.back').click());
   assert.match(document.querySelector('.study-summary').textContent, /Fotoğraf.*0 doğru.*-0,25 net.*0 puan.*Estetik.*1 doğru.*1 net.*100 puan/);
   await view.click('Ders Seçimi');
@@ -791,4 +792,42 @@ test('study setup back and canceled course edits preserve the committed selectio
   await act(async () => document.querySelector('.back').click());
   await view.click('Vize');
   assert.equal(document.getElementById('question-count').value, '1');
+});
+
+
+test('revealing an answer locks choices, records a blank and preserves scoring through review', async t => {
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question, { ...question, id: 'second' }, { ...question, id: 'third' }] });
+  await view.click('Tasarım'); await view.click('Estetik'); await view.click('Vize'); await view.click('Başla');
+  await view.click('Cevabı gör');
+  assert.match(document.querySelector('.correct').textContent, /Üç.*Doğru/s);
+  assert.equal(document.querySelector('.incorrect'), null);
+  assert.ok([...document.querySelectorAll('.option')].every(option => option.disabled && option.getAttribute('aria-pressed') === 'false'));
+  assert.match(document.querySelector('[role="status"]').textContent, /Boş bırakıldı/);
+  await view.click('Üç'); await view.click('Sonraki Soru');
+  assert.equal(document.querySelector('.correct'), null);
+  await view.click('Üç'); await view.click('Sonraki Soru'); await view.click('Bir'); await view.click('Sonuçları Gör');
+  assert.equal(document.querySelector('.score').textContent, '25 puan');
+  assert.deepEqual([...document.querySelectorAll('.result-counts dd')].map(el => el.textContent), ['1', '1', '1']);
+  await view.click('Gözden geçir');
+  assert.match(document.querySelector('.progress').textContent, /1 \/ 2/);
+  assert.doesNotMatch(document.querySelector('.study-actions').textContent, /Cevabı gör/);
+  assert.match(document.querySelector('[role="status"]').textContent, /Boş bırakıldı/);
+  await view.click('Sonraki');
+  assert.match(document.querySelector('[role="status"]').textContent, /Yanlış/);
+  await view.click('Sonuçlara Dön');
+  assert.equal(document.querySelector('.score').textContent, '25 puan');
+});
+
+test('study accepts revealed answers as completed blanks and shows them in its summary', async t => {
+  const view = await mount(t, { getCatalog: async () => catalog, getQuestionBank: async () => [question] });
+  await view.click('Tasarım'); await view.click('Çalışma oluştur'); await view.click('Estetik');
+  await view.click('1 dersle devam'); await view.click('Final'); await view.click('Başla');
+  await view.click('Cevabı gör'); await view.click('Sonuçları Gör');
+  assert.deepEqual([...document.querySelectorAll('.result-counts dd')].map(el => el.textContent), ['0', '0', '1']);
+  await view.click('Gözden geçir');
+  assert.match(document.querySelector('[role="status"]').textContent, /Boş bırakıldı/);
+  assert.equal(document.querySelector('h1').textContent, 'Gözden geçirme');
+  await view.click('Sonuçlara Dön');
+  await view.click('Çalışma sonuçlarını gör');
+  assert.match(document.querySelector('.study-summary').textContent, /0 doğru.*1 boş.*0 net.*0 puan/);
 });

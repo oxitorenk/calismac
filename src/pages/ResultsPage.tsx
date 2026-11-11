@@ -2,7 +2,7 @@ import type { TestSession } from '../domain/models';
 import { testResults } from '../domain/testResults';
 
 export function ResultsPage({ session, onReview, onCourses, onContinue, continueLabel }: { session: TestSession; onReview: () => void; onCourses: () => void; onContinue?: () => void; continueLabel?: string }) {
-  const { correct, wrong, net, score } = testResults(session);
+  const { correct, wrong, blank, net, score } = testResults(session);
   const displayedScore = score.toLocaleString('tr-TR', { maximumFractionDigits: 2 });
   return (
     <section className="test-results" aria-label="Test sonucu">
@@ -13,11 +13,12 @@ export function ResultsPage({ session, onReview, onCourses, onContinue, continue
       <dl className="result-counts">
         <div><dt>Doğru</dt><dd>{correct}</dd></div>
         <div><dt>Yanlış</dt><dd>{wrong}</dd></div>
+        <div><dt>Boş</dt><dd>{blank}</dd></div>
       </dl>
       <div className="result-actions">
         {onContinue && <button className="primary" onClick={onContinue}>{continueLabel}</button>}
-        {wrong > 0 && <button className={onContinue ? 'secondary' : 'primary'} onClick={onReview}>Yanlışları İncele</button>}
-        <button className={wrong > 0 || onContinue ? 'secondary' : 'primary'} onClick={onCourses}>Ders Seçimi</button>
+        {wrong + blank > 0 && <button className={onContinue ? 'secondary' : 'primary'} onClick={onReview}>Gözden geçir</button>}
+        <button className={wrong + blank > 0 || onContinue ? 'secondary' : 'primary'} onClick={onCourses}>Ders Seçimi</button>
       </div>
     </section>
   );

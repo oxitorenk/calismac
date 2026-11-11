@@ -39,7 +39,7 @@ export function StudyPage({ repository, catalog, departmentId, courseIds: initia
   const busy = sessions.length > 0 && !completed;
   useEffect(() => { onBusy(busy); return () => onBusy(false); }, [busy, onBusy]);
   const courseName = (id: string) => catalog.find(entry => entry.departmentId === departmentId && entry.courseId === id)?.course ?? id;
-  const title = page === 'edit' ? 'Dersleri düzenle' : page === 'exam' || page === 'count' ? 'Çalışma oluştur' : page === 'summary' ? 'Çalışma tamamlandı' : courseName(courseIds[index]);
+  const title = page === 'edit' ? 'Dersleri düzenle' : page === 'exam' || page === 'count' ? 'Çalışma oluştur' : page === 'wrong' ? 'Gözden geçirme' : page === 'summary' ? 'Çalışma tamamlandı' : courseName(courseIds[index]);
   const countBank = useMemo(() => banks.status === 'ready'
     ? banks.data.length !== courseIds.length ? { status: 'loading' as const } : { status: 'ready' as const, data: banks.data.reduce((largest, bank) => bank.length > largest.length ? bank : largest, banks.data[0] ?? []) }
     : banks, [banks, courseIds.length]);
@@ -81,7 +81,7 @@ export function StudyPage({ repository, catalog, departmentId, courseIds: initia
       <ul className="grouped-list study-summary">{sessions.map((item, itemIndex) => {
         const result = testResults(item);
         return <li key={item.courseId}><button className="list-button" onClick={() => { setIndex(itemIndex); setPage('results'); }}>
-          <span className="summary-details"><strong>{courseName(item.courseId)}</strong><span>{item.questions.length} soruda {result.correct} doğru · {result.net.toLocaleString('tr-TR')} net · {result.score.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} puan</span></span>
+          <span className="summary-details"><strong>{courseName(item.courseId)}</strong><span>{item.questions.length} soruda {result.correct} doğru · {result.blank} boş · {result.net.toLocaleString('tr-TR')} net · {result.score.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} puan</span></span>
           <svg className="disclosure" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
         </button></li>;
       })}</ul>

@@ -100,7 +100,7 @@ export function App({ repository = defaultRepository }: { repository?: ContentRe
       page={route.page}
       compact={route.page === 'test' || route.page === 'wrong'}
       contextLabel={route.page === 'count' || route.page === 'test' || route.page === 'wrong' || route.page === 'results' ? `${route.examType === 'midterm' ? 'Vize' : 'Final'}${route.page !== 'test' && route.page !== 'count' && course ? ` · ${course}` : ''}` : undefined}
-      title={route.page === 'results' ? 'Sonuçlar' : route.page === 'wrong' ? 'Yanlışlar' : course ?? department ?? 'Bölümler'}
+      title={route.page === 'results' ? 'Sonuçlar' : route.page === 'wrong' ? 'Gözden geçirme' : course ?? department ?? 'Bölümler'}
       backLabel={route.page === 'courses' ? 'Bölümler' : route.page === 'wrong' ? 'Sonuçlar' : route.page === 'count' ? 'Sınav Tipi' : route.page === 'course' ? 'Dersler' : course}
       onBack={route.page === 'departments' || route.page === 'results' ? undefined : () => navigate(parentRoute(route))}
     >
